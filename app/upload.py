@@ -1,7 +1,7 @@
 # app/upload.py
 import streamlit as st
 
-def upload_image():
+def upload():
     st.subheader("Upload Image")
 
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
@@ -12,4 +12,5 @@ def upload_image():
         st.success("Image uploaded successfully.")
     elif 'uploaded_image' in st.session_state:
         st.warning("Image already uploaded. You can view it below.")
+
 

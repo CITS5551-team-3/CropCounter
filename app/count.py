@@ -10,6 +10,23 @@ import streamlit as st
 from PIL import Image
 import io
 
+from utils import *
+from params import PARAMS
+
+import json
+
+def save_bounding_boxes(image, bounding_boxes, output_json_file):
+    # Create a list of bounding box dictionaries
+    boxes_data = []
+    for (x, y, w, h) in bounding_boxes:
+        boxes_data.append({
+            "x": int(x),
+            "y": int(y),
+            "width": int(w),
+            "height": int(h)
+        })
+
+    st.session_state['bounding_boxes'] = boxes_data
 
 def count_image(image: any, *, image_bits: int,
                 red_channel = math.inf, green_channel = math.inf, blue_channel = math.inf,
@@ -49,22 +66,29 @@ def count_image(image: any, *, image_bits: int,
     # generate mask
 
     NGRDI = np.subtract(green, red) / np.add(green, red)
-    NGRDI_mask = cv2.threshold(NGRDI, 0, 255, cv2.THRESH_BINARY)[1].astype(np.uint8)
+    NGRDI_mask = cv2.threshold(NGRDI, PARAMS.mask_threshold, 255, cv2.THRESH_BINARY)[1].astype(np.uint8)
 
 
     # mask and process the image
 
     img = cv2.bitwise_or(img, img, mask=NGRDI_mask)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    _, img = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY)
+
+    display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
+
+    _, img = cv2.threshold(img, PARAMS.threshold, 255, cv2.THRESH_BINARY)
+
+    display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
 
     # image cleaning with erosion/dilation
 
-    img = cv2.erode(img, np.ones((2, 2), np.uint8), iterations = 8)
-    img = cv2.dilate(img, np.ones((3, 3), np.uint8), iterations = 9)
+    img = cv2.erode(img, PARAMS.erosion_kernel, iterations = 8)
 
-    st.subheader("Plant contours")
-    st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), caption="Plant contours after preprocessing", use_column_width=True)
+    display_image("Erode", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Erosion")
+
+    img = cv2.dilate(img, PARAMS.dilation_kernel, iterations = 9)
+
+    display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
 
     contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
@@ -83,14 +107,25 @@ def count_image(image: any, *, image_bits: int,
     # Define the thickness as a fraction of the image's width (e.g., 1% of the width)
     thickness = max(1, int(image_width * 0.001))  # Ensuring thickness is at least 1
 
+    bounding_boxes = []
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
+        bounding_boxes.append((x, y, w, h))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
 
+    save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
     crop_count = len(contours)
     return image, crop_count
 
-def pil_to_cv2_bgr(pil_image):
+# Convert OpenCV image to PIL Image
+def cv2_to_pil(cv2_image):
+    # Convert BGR to RGB
+    rgb_image = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2RGB)
+    # Convert to PIL Image
+    pil_image = Image.fromarray(rgb_image)
+    return pil_image
+
+def pil_to_cv2(pil_image):
     # Convert PIL image to RGB (PIL image is typically in RGB mode)
     pil_image = np.array(pil_image)
     
@@ -109,7 +144,7 @@ def count():
 
     if 'uploaded_image' in st.session_state:
         pil_image = Image.open(io.BytesIO(st.session_state['uploaded_image']))
-        image = pil_to_cv2_bgr(pil_image)
+        image = pil_to_cv2(pil_image)
         
         image, crop_count = count_image(
             image,
@@ -118,8 +153,16 @@ def count():
             green_channel=GREEN_CHANNEL,
             blue_channel=BLUE_CHANNEL
         )
-        
-        st.subheader("Plant count")
-        st.image(cv2.cvtColor(image, cv2.COLOR_BGR2RGB), caption="Processed Image", use_column_width=True)
+
+
+        image = cv2_to_pil(image)
+        display_image("Crop count", image, "Processed Image")
         st.info(f"Count: {crop_count}")
+        
+        # Convert image to bytes with file format
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        st.session_state['counted_image'] = buffer.getvalue()
+        st.session_state['crop_count'] = crop_count
+
     

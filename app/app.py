@@ -1,45 +1,41 @@
 # app/app.py
 import streamlit as st
-from upload import upload_image
-from display import display_image
-from preprocess import preprocess_page
+from download import download
+from upload import upload
+from display import display
 from count import count
+from params import PARAMS
+from utils import preconditons, html
 
 def main():
     # Custom CSS for full-page sections
-    st.markdown("""
+    html("""
         <style>
         body {
             margin: 0;
             font-family: sans-serif;
         }
-        .full-page {
-            # min-height: 50vh; /* Full viewport height */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow: auto; /* Ensure content can scroll if needed */
-        }
+        
         </style>
-        """, unsafe_allow_html=True)
+        """)
 
-    st.title("Image Processing App")
+    st.title("Crop Annotator")
 
     # Upload section
-    upload_image()
+    upload()
+
+    if not preconditons(display_error=False): return
 
     # Display section
-    st.markdown('<div class="full-page">', unsafe_allow_html=True)
-    display_image()
-    st.markdown('</div>', unsafe_allow_html=True)
+    display()
+
+    PARAMS.display_params()
 
     # Preprocess section
-    st.markdown('<div class="full-page">', unsafe_allow_html=True)
+    # if (st.button("Count", type="primary")):
     count()
-    st.markdown('</div>', unsafe_allow_html=True)
+
+    download()
 
 if __name__ == "__main__":
     main()
