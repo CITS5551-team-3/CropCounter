@@ -3,6 +3,7 @@ import streamlit as st
 from upload import upload_image
 from display import display_image
 from preprocess import preprocess_page
+from count import count
 
 def main():
     # Custom CSS for full-page sections
@@ -37,7 +38,7 @@ def main():
 
     # Preprocess section
     st.markdown('<div class="full-page">', unsafe_allow_html=True)
-    preprocess_page()
+    count()
     st.markdown('</div>', unsafe_allow_html=True)
 
 if __name__ == "__main__":
