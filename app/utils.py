@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def display_image(subheader, image, caption):
     st.subheader(subheader)
     st.image(image, caption=caption, use_column_width=True)

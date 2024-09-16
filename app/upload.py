@@ -1,6 +1,7 @@
 # app/upload.py
 import streamlit as st
 
+
 def upload():
     st.subheader("Upload Image")
 

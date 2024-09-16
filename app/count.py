@@ -1,19 +1,14 @@
+import io
 import math
-import time
-from typing import cast, Optional
+from typing import Optional
 
 import cv2
 import numpy as np
-import rasterio
-
 import streamlit as st
-from PIL import Image
-import io
-
-from utils import *
 from params import PARAMS
+from PIL import Image
+from utils import *
 
-import json
 
 def save_bounding_boxes(image, bounding_boxes, output_json_file):
     # Create a list of bounding box dictionaries

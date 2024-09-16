@@ -1,8 +1,10 @@
 # app/display.py
+import io
+
 import streamlit as st
 from PIL import Image
-import io
-from utils import preconditons, display_image
+from utils import display_image, preconditons
+
 
 def display():
     if not preconditons(): return
