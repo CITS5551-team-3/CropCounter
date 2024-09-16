@@ -1,10 +1,8 @@
-import streamlit as st
-import json
 import io
-import numpy as np
-from PIL import Image
+import json
 
-from utils import display_image
+import streamlit as st
+
 
 def download():
     # Check if bounding boxes and image are in session state
