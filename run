@@ -1,0 +1,14 @@
+#!/bin/bash
+
+IMAGE_NAME="cropcounter"
+
+# Check if the Docker image exists
+if [[ "$(docker images -q $IMAGE_NAME 2> /dev/null)" == "" ]]; then
+    echo "Image not found. Building the Docker image..."
+    docker build -t $IMAGE_NAME .
+else
+    echo "Image already exists. Skipping build."
+fi
+
+# Run the Docker container
+docker run -p 8501:8501 $IMAGE_NAME
