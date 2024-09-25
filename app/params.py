@@ -7,7 +7,7 @@ class Params:
         # Default values for the parameters
         self.mask_threshold = 0
         self.threshold = 10
-        self.erosion_kernel = np.ones((3, 3), np.uint8)
+        self.erosion_kernel = np.ones((2, 2), np.uint8)
         self.dilation_kernel = np.ones((3, 3), np.uint8)
 
     def display_params(self):

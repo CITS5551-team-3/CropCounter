@@ -8,6 +8,7 @@ import streamlit as st
 from params import PARAMS
 from PIL import Image
 from utils import *
+from contours import *
 
 
 def save_bounding_boxes(image, bounding_boxes, output_json_file):
@@ -22,6 +23,7 @@ def save_bounding_boxes(image, bounding_boxes, output_json_file):
         })
 
     st.session_state['bounding_boxes'] = boxes_data
+
 
 def count_image(image: any, *, image_bits: int,
                 red_channel = math.inf, green_channel = math.inf, blue_channel = math.inf,
@@ -77,25 +79,19 @@ def count_image(image: any, *, image_bits: int,
 
     # image cleaning with erosion/dilation
 
-    img = cv2.erode(img, PARAMS.erosion_kernel, iterations = 8)
+    img = cv2.erode(img, PARAMS.erosion_kernel, iterations = 6)
 
     display_image("Erode", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Erosion")
 
-    img = cv2.dilate(img, PARAMS.dilation_kernel, iterations = 9)
+    img = cv2.dilate(img, PARAMS.dilation_kernel, iterations = 8)
 
     display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
 
     contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
-    def contours_filter(contour: cv2.typing.MatLike) -> bool:
-        """True => keep"""
 
-        perimeter = cv2.arcLength(contour, True)
-        if perimeter < 10: return False
+    contours = get_filtered_contours(img, contours)
 
-        return True
-
-    contours = [contour for contour in contours if contours_filter(contour)]
     # Get image dimensions
     image_height, image_width, _ = image.shape
 
@@ -150,7 +146,9 @@ def count():
         )
 
 
+        image = draw_centered_bbox(image, 50, 50)
         image = cv2_to_pil(image)
+
         display_image("Crop count", image, "Processed Image")
         st.info(f"Count: {crop_count}")
         
