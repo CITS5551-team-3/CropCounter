@@ -1,6 +1,9 @@
 @echo off
 set IMAGE_NAME=cropcounter
 
+:: Navigate to the directory where the script is located
+cd /d %~dp0
+
 :: Check if the image exists
 docker images -q %IMAGE_NAME% >nul 2>&1
 if errorlevel 1 (

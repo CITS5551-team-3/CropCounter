@@ -20,7 +20,7 @@ def main():
         </style>
         """)
 
-    st.title("Crop Annotator")
+    st.title("Crop Counter")
 
     # Upload section
     upload()

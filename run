@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Navigate to the directory where the script is located
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 IMAGE_NAME="cropcounter"
 
 # Check if the Docker image exists
