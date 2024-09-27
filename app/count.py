@@ -80,31 +80,31 @@ def count_image(image: any, *, image_bits: int,
     img = cv2.bitwise_or(img, img, mask=NGRDI_mask)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # if not headless: display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
+    if not headless: display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
 
     _, img = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY)
 
-    # if not headless: display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
+    if not headless: display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
 
     # # image cleaning with erosion/dilation
     # # start = time.time()
-    # img = cv2.erode(img, np.ones((2, 2), np.uint8), iterations = PARAMS.erosion_iterations)
+    img = cv2.erode(img, np.ones((2, 2), np.uint8), iterations = PARAMS.erosion_iterations)
     # # print(time.time() - start)
 
-    # # if not headless: display_image("Erode", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Erosion")
+    if not headless: display_image("Erode", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Erosion")
     # # start = time.time()
-    # img = cv2.dilate(img, np.ones((3, 3), np.uint8), iterations = PARAMS.dilation_iterations)
+    img = cv2.dilate(img, np.ones((3, 3), np.uint8), iterations = PARAMS.dilation_iterations)
     # print(time.time() - start)
-    display_image("initial", img, "Hull")
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((2, 2)), iterations=6)
-    display_image("open", img, "Hull")
-    img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=3)
-    # if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
-    display_image("close", img, "Hull")
+    # display_image("initial", img, "Hull")
+    # img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((2, 2)), iterations=6)
+    # display_image("open", img, "Hull")
+    # img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=3)
+    # # if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
+    # display_image("close", img, "Hull")
     contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contour_image = image.copy()
-    cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 8)
-    display_image("contour image", img, "Hull")
+    # contour_image = image.copy()
+    # cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 8)
+    # display_image("contour image", img, "Hull")
 
     # start = time.time()
     contours = get_filtered_contours(img, contours, PARAMS)
@@ -121,8 +121,8 @@ def count_image(image: any, *, image_bits: int,
     # print(time.time() - start)
     bounding_boxes = []
     contour_image = image.copy()
-    cv2.drawContours(contour_image, contours, -1, (0, 0, 255), thickness=8)  # You can adjust the thickness
-    display_image("Contours", contour_image, "contours" )
+    # cv2.drawContours(contour_image, contours, -1, (0, 0, 255), thickness=8)  # You can adjust the thickness
+    # display_image("Contours", contour_image, "contours" )
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
         bounding_boxes.append((x, y, w, h))
@@ -191,7 +191,7 @@ def count(params: Params, headless=False):
         )
 
 
-        image = draw_centered_bbox(image, 50, 50)
+        # image = draw_centered_bbox(image, 50, 50)
         image = cv2_to_pil(image)
         
         # Convert image to bytes with file format
