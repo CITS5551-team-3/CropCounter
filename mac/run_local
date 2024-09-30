@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Navigate to the directory where the script is located
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+# Activate the virtual environment
+source venv/bin/activate
+
+# Specify the host and port
+HOST="localhost"  # Change this to 'localhost' if preferred
+PORT="8501"
+
+# Run the Streamlit app
+streamlit run app/app.py --server.address $HOST --server.port $PORT &
+
+STREAMLIT_PID=$!
+
+read -p "Press any key to exit..."  # Wait for user input
+# Store the PID of the Streamlit process
+# Kill the Streamlit process to close the port
+kill $STREAMLIT_PID
+
+exit
