@@ -31,7 +31,7 @@ Ensure that Python has been installed on the machine already.
 
 <!-- omit in toc -->
 #### Install and run the image
-Double click on the `install_local.bat` file (this may take some time and will initially look as though nothing is happening), followed by double clicking on the `run_local.bat` file.
+Double click on the `install_local.bat` file. This may take some time and will initially look as though nothing is happening. Do not close the window, it will close automaticlly once the installation is complete. After installing, the program can be started by double clicking on the `run_local.bat` file.
 **Note:** To safely exit, ensure you do not force the terminal window, and rather press any key in the terminal as instructed to close and exit the program safely.
 
 ### 3. Manual Installation
