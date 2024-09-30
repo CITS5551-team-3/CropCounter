@@ -33,22 +33,12 @@ cd /d "%~dp0.."
 :: Check if the image exists
 FOR /F "tokens=*" %%i IN ('docker images -q %IMAGE_NAME%') DO SET IMAGE_EXISTS=%%i
 
-if "%IMAGE_EXISTS%"=="" (
-    echo Image not found. Building the Docker image...
-    docker build -t %IMAGE_NAME% .
-) else (
-    echo Image already exists. Skipping build.
+if defined IMAGE_EXISTS (
+    echo Image already exists. Removing the old image...
+    docker rmi %IMAGE_NAME% -f
 )
 
-:: Run the Docker container
-docker run -d -p 8501:8501 --name cropcounter_container %IMAGE_NAME%
+echo Building the Docker image...
+docker build -t %IMAGE_NAME% .
 
-:: Open the URL in the default web browser
-start "" "http://localhost:8501"
-
-:: Wait for user input
-pause
-
-:: Stop the Docker container without removing it
-docker stop cropcounter_container
-docker rm cropcounter_container
+exit /b 0
