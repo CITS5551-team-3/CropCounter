@@ -12,7 +12,6 @@ There are 3 different ways to install and run the app. You can run the app via D
 <!-- omit in toc -->
 #### Install docker
 Install docker by following: https://docs.docker.com/get-docker/
-<!-- omit in toc -->
 
 <!-- omit in toc -->
 #### Install and run the image
@@ -28,7 +27,8 @@ In case of trouble shooting, open Docker Desktop and remove any images or contai
 
 <!-- omit in toc -->
 #### Install python
-Ensure that python has been installed on the machine already.
+Ensure that python has been installed on the machine already, if not then follow the instructions at: https://www.python.org/downloads/.
+A python version >= 3.10 is recommended.
 
 <!-- omit in toc -->
 #### Install and run the image
@@ -36,6 +36,11 @@ Double click on the `install_local` file, followed by double clicking on the `ru
 **Note:** To safely exit, ensure you do not force the terminal window, and rather press any key in the terminal as instructed to close and exit the program safely.
 
 ### 3. Manual Installation
+
+<!-- omit in toc -->
+#### Install python
+Ensure that python has been installed on the machine already, if not then follow the instructions at: https://www.python.org/downloads/.
+A python version >= 3.10 is recommended.
 
 <!-- omit in toc -->
 #### Set up virtual environment

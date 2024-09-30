@@ -26,8 +26,9 @@ In case of troubleshooting, open Docker Desktop and remove any images or contain
 ### 2. Local Installation
 
 <!-- omit in toc -->
-#### Install Python
-Ensure that Python has been installed on the machine already.
+#### Install python
+Ensure that python has been installed on the machine already, if not then follow the instructions at: https://apps.microsoft.com/detail/9pjpw5ldxlz5.
+A python version >= 3.10 is recommended. 
 
 <!-- omit in toc -->
 #### Install and run the image
@@ -35,6 +36,11 @@ Double click on the `install_local.bat` file, followed by double clicking on the
 **Note:** To safely exit, ensure you do not force the terminal window, and rather press any key in the terminal as instructed to close and exit the program safely.
 
 ### 3. Manual Installation
+
+<!-- omit in toc -->
+#### Install python
+Ensure that python has been installed on the machine already, if not then follow the instructions at: https://apps.microsoft.com/detail/9pjpw5ldxlz5.
+A python version >= 3.10 is recommended.
 
 <!-- omit in toc -->
 #### Set up virtual environment
