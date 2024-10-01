@@ -3,33 +3,35 @@ import streamlit as st
 
 
 class Params:
-    def __init__(self):
+    def __init__(self, ei=6, di=8, ssf=1.4, mwt=40):
         # Default values for the parameters
-        self.mask_threshold = 0
-        self.threshold = 10
-        self.erosion_kernel = np.ones((3, 3), np.uint8)
-        self.dilation_kernel = np.ones((3, 3), np.uint8)
+        self.erosion_iterations = ei
+        self.dilation_iterations = di
+        self.split_scale_factor = ssf
+        self.minimum_width_threshold = mwt
 
     def display_params(self):
         # Display and update parameters in Streamlit
         st.sidebar.header("Image Processing Parameters")
 
-        self.mask_threshold = st.sidebar.slider(
-            "Mask Threshold", 0, 255, self.mask_threshold
+        erosion_iterations = st.sidebar.slider(
+            "Erosion Iterations", 1, 10, self.erosion_iterations
         )
-        self.threshold = st.sidebar.slider(
-            "Threshold", 0, 255, self.threshold
+        dilation_iterations = st.sidebar.slider(
+            "Dilation Iterations", 1, 10, self.dilation_iterations
+        )
+        split_scale_factor = st.sidebar.slider(
+            "Split Scale Factor", 1.0, 3.0, self.split_scale_factor, step=0.1
+        )
+        minimum_width_threshold = st.sidebar.slider(
+            "Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10
         )
 
-        erosion_size = st.sidebar.slider(
-            "Erosion Kernel Size", 1, 10, self.erosion_kernel.shape[0]
-        )
-        dilation_size = st.sidebar.slider(
-            "Dilation Kernel Size", 1, 10, self.dilation_kernel.shape[0]
-        )
 
-        self.erosion_kernel = np.ones((erosion_size, erosion_size), np.uint8)
-        self.dilation_kernel = np.ones((dilation_size, dilation_size), np.uint8)
+        self.erosion_iterations = erosion_iterations
+        self.dilation_iterations = dilation_iterations
+        self.split_scale_factor = split_scale_factor
+        self.minimum_width_threshold = minimum_width_threshold
 
 
 PARAMS = Params()

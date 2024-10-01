@@ -4,7 +4,6 @@ from typing import Optional
 
 import cv2
 import numpy as np
-import streamlit as st
 from params import Params
 from PIL import Image
 from utils import *
@@ -80,31 +79,47 @@ def count_image(image: any, *, image_bits: int,
     img = cv2.bitwise_or(img, img, mask=NGRDI_mask)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    if not headless: display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
+    # if not headless: display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
 
     _, img = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY)
 
-    if not headless: display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
+    # if not headless: display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
 
-    # # image cleaning with erosion/dilation
-    # # start = time.time()
+    # image cleaning with erosion/dilation
+    # start = time.time()
     img = cv2.erode(img, np.ones((2, 2), np.uint8), iterations = PARAMS.erosion_iterations)
-    # # print(time.time() - start)
+    # print(time.time() - start)
 
-    if not headless: display_image("Erode", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Erosion")
-    # # start = time.time()
+    # if not headless: display_image("Erode", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Erosion")
+    # start = time.time()
     img = cv2.dilate(img, np.ones((3, 3), np.uint8), iterations = PARAMS.dilation_iterations)
     # print(time.time() - start)
-    # display_image("initial", img, "Hull")
-    # img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((2, 2)), iterations=6)
-    # display_image("open", img, "Hull")
-    # img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=3)
-    # # if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
-    # display_image("close", img, "Hull")
-    contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # contour_image = image.copy()
-    # cv2.drawContours(contour_image, contours, -1, (0, 255, 0), 8)
-    # display_image("contour image", img, "Hull")
+    num_labels, labels_im = cv2.connectedComponents(img)
+    print((num_labels))
+    contour_mask = np.zeros_like(img)
+    for label in range(1, num_labels):  # Skip label 0, which is the background
+        contour_mask[labels_im == label] = 255  # Set connected component pixels to white
+    # color_labels = cv2.applyColorMap(labels_im.astype(np.uint8) * (255 // num_labels), cv2.COLORMAP_JET)
+    # cv2.imshow('Connected Components', color_labels)
+    # if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
+
+    contours, _ = cv2.findContours(contour_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Create a blank image with the same dimensions as the original
+    contour_img = np.zeros_like(img)
+
+    # Draw each contour on the blank image with white color and thickness 1
+    for i, contour in enumerate(contours):
+        cv2.drawContours(contour_img, [contour], -1, (255, 255, 255), 1)
+
+    # Optionally, merge with the original image to see the context
+    # Overlay the contours on the original image
+    overlay = cv2.addWeighted(img, 1.0, contour_img, 1.0, 0)
+
+    # Display the image with contours
+    cv2.imshow("img", overlay)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     # start = time.time()
     contours = get_filtered_contours(img, contours, PARAMS)
@@ -119,16 +134,13 @@ def count_image(image: any, *, image_bits: int,
 
     # start = time.time()
     # print(time.time() - start)
-    bounding_boxes = []
-    contour_image = image.copy()
-    # cv2.drawContours(contour_image, contours, -1, (0, 0, 255), thickness=8)  # You can adjust the thickness
-    # display_image("Contours", contour_image, "contours" )
-    for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        bounding_boxes.append((x, y, w, h))
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
+    # bounding_boxes = []
+    # for contour in contours:
+    #     x, y, w, h = cv2.boundingRect(contour)
+    #     bounding_boxes.append((x, y, w, h))
+    #     cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
 
-    save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
+    # # save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
 
     # print(time.time() - start)
     crop_count = len(contours)
@@ -163,7 +175,7 @@ def count(params: Params, headless=False):
     BLUE_CHANNEL = 3
 
     if headless:
-        filename = "../original images/0I8A0573.JPG"
+        filename = "../original images/0I8A0576.JPG"
         image = cv2.imread(filename)
         if image is None:
             raise Exception
@@ -175,30 +187,8 @@ def count(params: Params, headless=False):
             blue_channel=BLUE_CHANNEL,
             headless=True
         )
-        # print(crop_count)
+        print(crop_count)
         return crop_count
-
-    if 'uploaded_image' in st.session_state:
-        pil_image = Image.open(io.BytesIO(st.session_state['uploaded_image']))
-        image = pil_to_cv2(pil_image)
-        
-        image, crop_count = count_image(
-            image,
-            image_bits=IMAGE_BITS,
-            red_channel=RED_CHANNEL,
-            green_channel=GREEN_CHANNEL,
-            blue_channel=BLUE_CHANNEL,
-        )
-
-
-        # image = draw_centered_bbox(image, 50, 50)
-        image = cv2_to_pil(image)
-        
-        # Convert image to bytes with file format
-        buffer = io.BytesIO()
-        image.save(buffer, format="PNG")
-        st.session_state['counted_image'] = buffer.getvalue()
-        st.session_state['crop_count'] = crop_count
 
     
 
