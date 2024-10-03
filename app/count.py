@@ -5,6 +5,8 @@ from typing import Optional
 import cv2
 import numpy as np
 import streamlit as st
+
+from reassembler import Reassembler, Rect
 from params import Params
 from PIL import Image
 from utils import *
@@ -37,7 +39,19 @@ def count_image(image: any, *, image_bits: int,
                 red_channel = math.inf, green_channel = math.inf, blue_channel = math.inf,
                 nir_channel = math.inf, re_channel = math.inf, headless=False) -> int:
     """expects `np.seterr(divide='ignore', invalid='ignore')`"""
+    useROI = bool(PARAMS.use_fast_mode)
+    if useROI:
+        #if not headless: display_image("Uploaded Image", cv2.cvtColor(image, cv2.COLOR_BGR2RGB), "Original Image")
+        st = time.time()
+        image0 = image
+        reassembler = Reassembler()
+        image = reassembler.reassemble(image, autosize=True, margin=0,
+                                       border=max(PARAMS.erosion_iterations + 2, PARAMS.dilation_iterations * 2 + 3) + 2,
+                                       n_erode=PARAMS.erosion_iterations, n_dilate=PARAMS.dilation_iterations)
+        print("Reassemble ", time.time() - st)
+        #if not headless: display_image("Cropped Image", cv2.cvtColor(image, cv2.COLOR_BGR2RGB), "Image with ROIs")
 
+    st = time.time()
     # Extract color channels from the image
     red_raw = image[:, :, 2]  # Red channel
     green_raw = image[:, :, 1]  # Green channel
@@ -123,16 +137,26 @@ def count_image(image: any, *, image_bits: int,
     contour_image = image.copy()
     # cv2.drawContours(contour_image, contours, -1, (0, 0, 255), thickness=8)  # You can adjust the thickness
     # display_image("Contours", contour_image, "contours" )
+    print("Preprocessing & Find Contours ", time.time() - st)
+    if useROI:
+        image = image0
+
+    st = time.time()
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
+        if useROI:
+            rect_o = reassembler.reverse_mapping([Rect(x, y, w, h)])[0].dst
+            x, y, w, h = rect_o.x, rect_o.y, rect_o.w, rect_o.h
         bounding_boxes.append((x, y, w, h))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
+    print("Bounding Boxes ", time.time() - st)
 
     save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
 
     # print(time.time() - start)
     crop_count = len(contours)
     return image, crop_count
+
 
 # Convert OpenCV image to PIL Image
 def cv2_to_pil(cv2_image):
@@ -142,14 +166,16 @@ def cv2_to_pil(cv2_image):
     pil_image = Image.fromarray(rgb_image)
     return pil_image
 
+
 def pil_to_cv2(pil_image):
     # Convert PIL image to RGB (PIL image is typically in RGB mode)
     pil_image = np.array(pil_image)
-    
+
     # Convert RGB to BGR
     bgr_image = cv2.cvtColor(pil_image, cv2.COLOR_RGB2BGR)
-    
+
     return bgr_image
+
 
 def count(params: Params, headless=False):
     global PARAMS
@@ -192,12 +218,10 @@ def count(params: Params, headless=False):
 
 
         # image = draw_centered_bbox(image, 50, 50)
-        image = cv2_to_pil(image)
-        
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
         # Convert image to bytes with file format
-        buffer = io.BytesIO()
-        image.save(buffer, format="PNG")
-        st.session_state['counted_image'] = buffer.getvalue()
+        st.session_state['counted_image'] = image
         st.session_state['crop_count'] = crop_count
 
     

@@ -16,7 +16,7 @@ def display():
 def display_final():
     if not preconditons(): return
 
-    image = Image.open(io.BytesIO(st.session_state['counted_image']))
+    image = st.session_state['counted_image']
     crop_count = st.session_state['crop_count']
     
     st.success("Counted successfully")

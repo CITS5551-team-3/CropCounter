@@ -26,12 +26,16 @@ class Params:
         minimum_width_threshold = st.sidebar.slider(
             "Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10
         )
+        use_fast_mode = st.sidebar.checkbox(
+            "Fast Mode", value=False
+        )
 
 
         self.erosion_iterations = erosion_iterations
         self.dilation_iterations = dilation_iterations
         self.split_scale_factor = split_scale_factor
         self.minimum_width_threshold = minimum_width_threshold
+        self.use_fast_mode = use_fast_mode
 
 
 PARAMS = Params()
