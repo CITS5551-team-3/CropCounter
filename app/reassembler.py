@@ -378,8 +378,7 @@ class Reassembler:
                    sorting_method: RectSorting = RectSorting.HEIGHT_DESC,
                    autosize: bool = False,
                    border: int = 3,
-                   margin: int | Tuple[int, int] = 8,
-                   n_erode=6, n_dilate=8) -> np.ndarray:
+                   margin: int | Tuple[int, int] = 8) -> np.ndarray:
         """
 
         Args:
@@ -399,7 +398,7 @@ class Reassembler:
             raise Exception("Already reassembled")
 
         # Preprocessing
-        green_rects = extract_green_regions_bgr(srcImg, n_erode, n_dilate)
+        green_rects = extract_green_regions_bgr(srcImg)
         for rect in green_rects:
             self.addRect(rect)
 
@@ -563,18 +562,18 @@ def extract_green_regions(image) -> List[Rect]:
     return result
 
 
-def extract_green_regions_bgr(image, n_erode, n_dilate) -> List[Rect]:
+def extract_green_regions_bgr(image) -> List[Rect]:
     b1 = vegetation_index_bgr(image)
 
-    b2 = cv2.erode(b1, np.ones((2, 2), np.uint8), iterations=n_erode)
-    b2 = cv2.dilate(b2, np.ones((3, 3), np.uint8), iterations=n_dilate)
+    b2 = cv2.erode(b1, np.ones((10, 10), np.uint8))
+    b2 = cv2.dilate(b2, np.ones((10, 10), np.uint8))
 
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(b2, connectivity=8)
 
     result: List[Rect] = []
     for i in range(1, num_labels):
         x, y, w, h, area = stats[i]
-        if w < n_erode or h < n_erode:
+        if w < 10 or h < 10:
             continue
         result.append(Rect(x, y, w, h))
     return result

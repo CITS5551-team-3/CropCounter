@@ -3,38 +3,35 @@ import streamlit as st
 
 
 class Params:
-    def __init__(self, ei=6, di=8, ssf=1.4, mwt=40):
+    def __init__(self, ct=0.3, ss=1200, o=0.2):
         # Default values for the parameters
-        self.erosion_iterations = ei
-        self.dilation_iterations = di
-        self.split_scale_factor = ssf
-        self.minimum_width_threshold = mwt
+        self.confidence_threshold=ct
+        self.slice_size=ss
+        self.overlap_ratio=0.2
 
     def display_params(self):
         # Display and update parameters in Streamlit
         st.sidebar.header("Image Processing Parameters")
 
-        erosion_iterations = st.sidebar.slider(
-            "Erosion Iterations", 1, 10, self.erosion_iterations
+        confidence_threshold = st.sidebar.slider(
+            "Confidence Threshold", 0.1, 0.9, self.confidence_threshold, step=0.05
         )
-        dilation_iterations = st.sidebar.slider(
-            "Dilation Iterations", 1, 10, self.dilation_iterations
+
+        slice_size = st.sidebar.slider(
+            "Slice Size", 640, 2500, self.slice_size
         )
-        split_scale_factor = st.sidebar.slider(
-            "Split Scale Factor", 1.0, 3.0, self.split_scale_factor, step=0.1
+
+        overlap_ratio = st.sidebar.slider(
+            "Overlap Ratio", 0.05, 0.5, self.overlap_ratio
         )
-        minimum_width_threshold = st.sidebar.slider(
-            "Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10
-        )
+
         use_fast_mode = st.sidebar.checkbox(
             "Fast Mode", value=False
         )
 
-
-        self.erosion_iterations = erosion_iterations
-        self.dilation_iterations = dilation_iterations
-        self.split_scale_factor = split_scale_factor
-        self.minimum_width_threshold = minimum_width_threshold
+        self.slice_size = slice_size
+        self.confidence_threshold = confidence_threshold
+        self.overlap_ratio = overlap_ratio
         self.use_fast_mode = use_fast_mode
 
 
