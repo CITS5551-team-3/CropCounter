@@ -17,7 +17,7 @@ import warnings
 # Suppress all warnings
 warnings.filterwarnings("ignore")
 
-PARAMS = None
+PARAMS: Params
 
 def save_bounding_boxes(image, bounding_boxes, output_json_file):
     # Create a list of bounding box dictionaries
@@ -33,9 +33,9 @@ def save_bounding_boxes(image, bounding_boxes, output_json_file):
     st.session_state['bounding_boxes'] = boxes_data
 
 
-def count_image(image: any, *, image_bits: int,
+def count_image(image: cv2.typing.MatLike, *, image_bits: int,
                 red_channel = math.inf, green_channel = math.inf, blue_channel = math.inf,
-                nir_channel = math.inf, re_channel = math.inf, headless=False) -> int:
+                nir_channel = math.inf, re_channel = math.inf, headless=False) -> tuple[cv2.typing.MatLike, int]:
     """expects `np.seterr(divide='ignore', invalid='ignore')`"""
 
     # Extract color channels from the image
@@ -164,6 +164,7 @@ def count(params: Params, headless=False):
 
     if headless:
         filename = "../original images/0I8A0573.JPG"
+
         image = cv2.imread(filename)
         if image is None:
             raise Exception
