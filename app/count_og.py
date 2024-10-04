@@ -13,7 +13,6 @@ from contours import *
 import time
 
 import warnings
-from crop import Crop
 
 # Suppress all warnings
 warnings.filterwarnings("ignore")
@@ -31,7 +30,6 @@ def save_bounding_boxes(image, bounding_boxes, output_json_file):
             "height": int(h)
         })
 
-    return boxes_data
     st.session_state['bounding_boxes'] = boxes_data
 
 
@@ -130,11 +128,11 @@ def count_image(image: any, *, image_bits: int,
         bounding_boxes.append((x, y, w, h))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
 
-    boxes_data = save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
+    save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
 
     # print(time.time() - start)
     crop_count = len(contours)
-    return image, crop_count, boxes_data
+    return image, crop_count
 
 # Convert OpenCV image to PIL Image
 def cv2_to_pil(cv2_image):
@@ -153,7 +151,10 @@ def pil_to_cv2(pil_image):
     
     return bgr_image
 
-def count(crop: Crop,  headless=False):
+def count(params: Params, headless=False):
+    global PARAMS
+    PARAMS = params
+
     np.seterr(divide='ignore', invalid='ignore')
 
     IMAGE_BITS = 8
@@ -161,27 +162,47 @@ def count(crop: Crop,  headless=False):
     GREEN_CHANNEL = 2
     BLUE_CHANNEL = 3
 
+    if headless:
+        filename = "../original images/0I8A0573.JPG"
+        image = cv2.imread(filename)
+        if image is None:
+            raise Exception
+        image, crop_count = count_image(
+            image,
+            image_bits=IMAGE_BITS,
+            red_channel=RED_CHANNEL,
+            green_channel=GREEN_CHANNEL,
+            blue_channel=BLUE_CHANNEL,
+            headless=True
+        )
+        # print(crop_count)
+        return crop_count
 
-    image = pil_to_cv2(crop.original_image)
-    counted_image, crop_count, bbox = count_image(
-        image,
-        image_bits=IMAGE_BITS,
-        red_channel=RED_CHANNEL,
-        green_channel=GREEN_CHANNEL,
-        blue_channel=BLUE_CHANNEL,
-    )
+    if 'uploaded_image' in st.session_state:
+        pil_image = Image.open(io.BytesIO(st.session_state['uploaded_image']))
+        image = pil_to_cv2(pil_image)
+        
+        image, crop_count = count_image(
+            image,
+            image_bits=IMAGE_BITS,
+            red_channel=RED_CHANNEL,
+            green_channel=GREEN_CHANNEL,
+            blue_channel=BLUE_CHANNEL,
+        )
 
 
-    # image = draw_centered_bbox(image, 50, 50)
-    counted_image = cv2_to_pil(counted_image)
+        # image = draw_centered_bbox(image, 50, 50)
+        image = cv2_to_pil(image)
+        
+        # Convert image to bytes with file format
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        st.session_state['counted_image'] = buffer.getvalue()
+        st.session_state['crop_count'] = crop_count
+
     
-    # Convert image to bytes with file format
-    buffer = io.BytesIO()
-    counted_image.save(buffer, format="PNG")
 
-    crop.update_data(buffer.getvalue(), crop_count, bbox)
 
-    st.session_state[crop.filename] = crop
 
 if __name__ == "__main__":
     # start = time.time()
