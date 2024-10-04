@@ -15,8 +15,10 @@ start /B streamlit run app\app.py --server.address %HOST% --server.port %PORT%
 
 set STREAMLIT_PID=%ERRORLEVEL%
 
+
 :: Wait for user input
-set /p dummy="Press any key to exit once program has started... Program Starting..."
+set /p dummy="Program Starting. Press any key once program has begun..."
+set /p dummy="Press any key to exit..."
 
 
 :: Kill the Streamlit process using the stored PID
