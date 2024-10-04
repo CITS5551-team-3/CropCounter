@@ -7,6 +7,10 @@ WORKDIR /app
 # Copy the requirements.txt file into the container
 COPY requirements.txt .
 
+RUN apt-get update
+
+RUN apt-get install ffmpeg libsm6 libxext6 -y
+
 # Install any required packages
 RUN pip install --no-cache-dir -r requirements.txt
 
