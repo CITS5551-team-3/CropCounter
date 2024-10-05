@@ -1,10 +1,12 @@
 import numpy as np
 import streamlit as st
+import time
 
 
 class Params:
-    def __init__(self, ei=6, di=8, ssf=1.4, mwt=40):
+    def __init__(self, filename="", ei=6, di=8, ssf=1.4, mwt=40):
         # Default values for the parameters
+        self.filename = filename
         self.erosion_iterations = ei
         self.dilation_iterations = di
         self.split_scale_factor = ssf
@@ -12,19 +14,19 @@ class Params:
 
     def display_params(self):
         # Display and update parameters in Streamlit
-        st.sidebar.header("Image Processing Parameters")
+        st.sidebar.header(self.filename)
 
         erosion_iterations = st.sidebar.slider(
-            "Erosion Iterations", 1, 10, self.erosion_iterations
+            "Erosion Iterations", 1, 10, self.erosion_iterations, key=f"{self.filename}_ei"
         )
         dilation_iterations = st.sidebar.slider(
-            "Dilation Iterations", 1, 10, self.dilation_iterations
+            "Dilation Iterations", 1, 10, self.dilation_iterations, key=f"{self.filename}_di"
         )
         split_scale_factor = st.sidebar.slider(
-            "Split Scale Factor", 1.0, 3.0, self.split_scale_factor, step=0.1
+            "Split Scale Factor", 1.0, 3.0, self.split_scale_factor, step=0.1, key=f"{self.filename}_ssf"
         )
         minimum_width_threshold = st.sidebar.slider(
-            "Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10
+            "Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10, key=f"{self.filename}_mwt"
         )
 
 
@@ -33,5 +35,11 @@ class Params:
         self.split_scale_factor = split_scale_factor
         self.minimum_width_threshold = minimum_width_threshold
 
+    def __eq__(self, other):
+            if not isinstance(other, Params):
+                return NotImplemented
+            return vars(self) == vars(other)
+    
+    def __hash__(self):
+        return hash(tuple(vars(self).values()))
 
-PARAMS = Params()

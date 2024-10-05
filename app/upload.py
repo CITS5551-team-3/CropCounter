@@ -3,11 +3,12 @@ import time
 import streamlit as st
 import os
 from crop import Crop
+from params import Params
 
 def upload_crop(uploaded_file):
     filename = None
     if uploaded_file is not None:
-        filename, _ = os.path.splitext(uploaded_file.name)
+        filename = uploaded_file.name
     else: return
 
 
@@ -16,7 +17,9 @@ def upload_crop(uploaded_file):
     #     return
 
     # Save the uploaded image to session state
-    st.session_state[filename] = Crop(filename, uploaded_file.getvalue())
+    params = Params(filename)
+    
+    st.session_state[filename] = Crop(filename, uploaded_file.getvalue(), params)
     st.success("Image uploaded successfully.")
 
 
@@ -29,14 +32,13 @@ def upload():
         if 'uploaded_files' in st.session_state:
             del st.session_state['uploaded_files']
         
-        st.write(len(st.session_state.keys()))
         st.session_state['uploaded_files'] = uploaded_files
 
         for uploaded_file in uploaded_files:
             upload_crop(uploaded_file)
 
         # Clean up files
-        filenames = [os.path.splitext(uploaded_file.name)[0] for uploaded_file in uploaded_files]
+        filenames = [uploaded_file.name for uploaded_file in uploaded_files]
         for key in st.session_state.keys():
             if key == "uploaded_files": continue
 

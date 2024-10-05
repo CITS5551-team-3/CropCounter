@@ -13,7 +13,7 @@ from contours import *
 import time
 
 import warnings
-from crop import Crop
+# from crop import Crop
 
 # Suppress all warnings
 warnings.filterwarnings("ignore")
@@ -32,14 +32,10 @@ def save_bounding_boxes(image, bounding_boxes, output_json_file):
         })
 
     return boxes_data
-    st.session_state['bounding_boxes'] = boxes_data
+    # st.session_state['bounding_boxes'] = boxes_data
 
 
-def count_image(image: any, *, image_bits: int,
-                red_channel = math.inf, green_channel = math.inf, blue_channel = math.inf,
-                nir_channel = math.inf, re_channel = math.inf, headless=False) -> int:
-    """expects `np.seterr(divide='ignore', invalid='ignore')`"""
-
+def count_image(image: any, PARAMS: Params, image_bits: int, headless=False) -> int:
     # Extract color channels from the image
     red_raw = image[:, :, 2]  # Red channel
     green_raw = image[:, :, 1]  # Green channel
@@ -153,38 +149,57 @@ def pil_to_cv2(pil_image):
     
     return bgr_image
 
-def count(crop: Crop,  headless=False):
-    np.seterr(divide='ignore', invalid='ignore')
-
+def count_from_image(original_image, params):
     IMAGE_BITS = 8
-    RED_CHANNEL = 1
-    GREEN_CHANNEL = 2
-    BLUE_CHANNEL = 3
 
+    cv2_image = pil_to_cv2(original_image)
 
-    image = pil_to_cv2(crop.original_image)
     counted_image, crop_count, bbox = count_image(
-        image,
-        image_bits=IMAGE_BITS,
-        red_channel=RED_CHANNEL,
-        green_channel=GREEN_CHANNEL,
-        blue_channel=BLUE_CHANNEL,
+        cv2_image,
+        params,
+        IMAGE_BITS,
+        True
     )
 
-
     # image = draw_centered_bbox(image, 50, 50)
-    counted_image = cv2_to_pil(counted_image)
+    pil_image = cv2_to_pil(counted_image)
     
     # Convert image to bytes with file format
     buffer = io.BytesIO()
-    counted_image.save(buffer, format="PNG")
+    pil_image.save(buffer, format="PNG")
 
-    crop.update_data(buffer.getvalue(), crop_count, bbox)
+    return buffer.getvalue(), crop_count, bbox
 
-    st.session_state[crop.filename] = crop
+    # crop.update_data(buffer.getvalue(), crop_count, bbox)
 
-if __name__ == "__main__":
-    # start = time.time()
-    PARAMS = Params()
-    count(PARAMS, headless=True)
-    # print(time.time() - start)
+    # st.session_state[crop.filename] = crop
+
+
+
+
+# def count_from_crop(crop: Crop,  headless=False):
+#     np.seterr(divide='ignore', invalid='ignore')
+
+#     IMAGE_BITS = 8
+#     RED_CHANNEL = 1
+#     GREEN_CHANNEL = 2
+#     BLUE_CHANNEL = 3
+
+
+#     image = pil_to_cv2(crop.original_image)
+#     counted_image, crop_count, bbox = count_image(
+#         image,
+#         image_bits=IMAGE_BITS,
+#         red_channel=RED_CHANNEL,
+#         green_channel=GREEN_CHANNEL,
+#         blue_channel=BLUE_CHANNEL,
+#     )
+
+
+
+
+# if __name__ == "__main__":
+#     # start = time.time()
+#     PARAMS = Params()
+#     count(PARAMS, headless=True)
+#     # print(time.time() - start)

@@ -1,12 +1,12 @@
 # app/app.py
 import streamlit as st
-from count import count
 from display import display, display_final
 from download_files import download
 from params import Params
 from upload import upload
 from utils import html, preconditons
 import os
+from crop import Crop
 
 
 def main():
@@ -30,11 +30,15 @@ def main():
     
     for file in st.session_state['uploaded_files']:
         st.subheader(file.name)
-        filename = os.path.splitext(file.name)[0]
+        filename = file.name
         # PARAMS = Params()
         # Display section
-        st.session_state[filename]
-
+        crop: Crop = st.session_state[filename]
+        
+        params = crop.params
+        params.display_params()
+        crop.set_params(params)
+        crop.display_counted_image()
 
         # PARAMS.display_params()
 

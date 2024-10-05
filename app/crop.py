@@ -3,10 +3,12 @@ import io
 import json
 from PIL import Image
 from params import Params
-
+from count import count_from_image
+from utils import display_image, preconditons
+import time
 
 class Crop():
-    def __init__(self, filename: str, image, params: Params = Params()):
+    def __init__(self, filename: str, image, params):
         self.filename = filename
         self.original_image = Image.open(io.BytesIO(image))
         
@@ -15,22 +17,51 @@ class Crop():
         self.bbox = None
         self.counted_image = None
 
-    def set_params(self, params: Params):
+    def set_params(self, params: Params):   
         self.params = params
         self.crop_count = None
         self.bbox = None
         self.counted_image = None
         self.count_crops()
 
+    # def count_crops(self):
+    #     # Use the cached version of count_crops using params and original_image
+    #     st.write(f"Params type: {[type(x) for x in tuple(vars(self.params).values())]}")
+    #     st.write(self.params.__hash__())
+    #     cached_result = self.cached_count_crops(self.filename, self.original_image, self.params)
+    #     self.update_data(*cached_result)
+
+    # @st.cache_data(show_spinner=False)
+    # def cached_count_crops(_self, filename, _original_image, params: Params):
+    #     # Perform the actual crop counting logic (this is the heavy-lifting)
+    #     st.write("Running count_crops")
+    #     return count_from_image(_original_image, params)
+
     def count_crops(self):
-        pass
+        # Check types of parameters for debugging
+        st.write(f"Params type: {[type(x) for x in tuple(vars(self.params).values())]}")
+        # This will not raise an error now
+        st.write(self.params.__hash__())
+        
+        # Unpack params into individual arguments
+        cached_result = self.cached_count_crops(self.original_image, **vars(self.params))
+        self.update_data(*cached_result)
 
-
+    @st.cache_data(show_spinner=False)
+    def cached_count_crops(_self, _original_image, filename="", erosion_iterations=6, dilation_iterations=8, split_scale_factor=1.4, minimum_width_threshold=40):
+        # Recreate Params object inside the cached function
+        params = Params(filename, erosion_iterations, dilation_iterations, split_scale_factor, minimum_width_threshold)
+        st.write("Running count_crops")
+        return count_from_image(_original_image, params)
 
     def update_data(self, counted_image, crop_count, bbox):
         self.counted_image = counted_image
         self.crop_count = crop_count
         self.bbox = bbox
+
+        # st.write(time.time())
+        # st.write(self.crop_count)
+        st.session_state[self.filename] = self
 
     def counted_image_file(self):
         if self.crop_count is None or self.counted_image is None:
@@ -78,6 +109,11 @@ class Crop():
                 file_name=image_file.name,
                 mime='image/png'
             )
+
+    def display_counted_image(self):
+        image = Image.open(io.BytesIO(self.counted_image))
+        display_image(self.filename, image, self.filename)
+        st.info(self.crop_count)
 
     def __repr__(self):
         return self.filename
