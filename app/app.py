@@ -6,6 +6,7 @@ from download_files import download
 from params import Params
 from upload import upload
 from utils import html, preconditons
+import os
 
 
 def main():
@@ -26,20 +27,25 @@ def main():
     upload()
 
     if not preconditons(display_error=False): return
-    PARAMS = Params()
-    # Display section
-    display()
+    
+    for file in st.session_state['uploaded_files']:
+        st.subheader(file.name)
+        filename = os.path.splitext(file.name)[0]
+        # PARAMS = Params()
+        # Display section
+        st.session_state[filename]
 
-    PARAMS.display_params()
 
-    # Preprocess section
-    # if (st.button("Count", type="primary")):
+        # PARAMS.display_params()
 
-    count(PARAMS)
+        # # Preprocess section
+        # # if (st.button("Count", type="primary")):
 
-    display_final()
+        # count(PARAMS)
 
-    download()
+        # display_final()
+
+        # download()
 
 if __name__ == "__main__":
     main()

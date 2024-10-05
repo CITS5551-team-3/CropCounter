@@ -5,7 +5,7 @@ def display_image(subheader, image, caption):
     st.image(image, caption=caption, use_column_width=True)
 
 def preconditons(display_error=True):
-    if 'uploaded_image' not in st.session_state:
+    if 'uploaded_files' not in st.session_state:
         if display_error: st.error("Error: Please upload a valid image")
         return False
     return True

@@ -15,6 +15,18 @@ class Crop():
         self.bbox = None
         self.counted_image = None
 
+    def set_params(self, params: Params):
+        self.params = params
+        self.crop_count = None
+        self.bbox = None
+        self.counted_image = None
+        self.count_crops()
+
+    def count_crops(self):
+        pass
+
+
+
     def update_data(self, counted_image, crop_count, bbox):
         self.counted_image = counted_image
         self.crop_count = crop_count
