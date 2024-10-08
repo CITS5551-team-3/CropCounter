@@ -22,7 +22,7 @@ class Params:
             f"{self.filename}: Dilation Iterations", 1, 10, self.dilation_iterations
         )
         split_scale_factor = st.sidebar.slider(
-            f"{self.filename}: Split Scale Factor", 1.0, 3.0, self.split_scale_factor, step=0.1
+            f"{self.filename}: Split Scale Factor", 1.0, 2.0, self.split_scale_factor, step=0.1
         )
         minimum_width_threshold = st.sidebar.slider(
             f"{self.filename}: Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10
