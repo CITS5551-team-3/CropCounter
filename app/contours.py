@@ -156,8 +156,6 @@ def get_filtered_contours(img, contours, params: Params):
     global PARAMS
     PARAMS = params
 
-    return contours
-
     split_contours = []
     max_width = int(PARAMS.split_scale_factor * np.mean([cv2.boundingRect(c)[2] for c in contours])) if contours else 200
 
