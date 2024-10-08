@@ -15,18 +15,17 @@ class Params:
     def display_params(self):
         # Display and update parameters in Streamlit
         st.sidebar.header(self.filename)
-
         erosion_iterations = st.sidebar.slider(
-            "Erosion Iterations", 1, 10, self.erosion_iterations, key=f"{self.filename}_ei"
+            "Erosion Iterations", 1, 10, st.session_state[f"{self.filename}_ei"], key=f"{self.filename}_ei"
         )
         dilation_iterations = st.sidebar.slider(
-            "Dilation Iterations", 1, 10, self.dilation_iterations, key=f"{self.filename}_di"
+            "Dilation Iterations", 1, 10, key=f"{self.filename}_di"
         )
         split_scale_factor = st.sidebar.slider(
-            "Split Scale Factor", 1.0, 3.0, self.split_scale_factor, step=0.1, key=f"{self.filename}_ssf"
+            "Split Scale Factor", 1.0, 3.0, step=0.1, key=f"{self.filename}_ssf"
         )
         minimum_width_threshold = st.sidebar.slider(
-            "Minimum Width Threshold", 10, 100, self.minimum_width_threshold, step=10, key=f"{self.filename}_mwt"
+            "Minimum Width Threshold", 10, 100, step=10, key=f"{self.filename}_mwt"
         )
 
 

@@ -8,17 +8,17 @@ from utils import display_image, preconditons
 import time
 
 class Crop():
-    def __init__(self, filename: str, image, params):
+    def __init__(self, filename: str, image):
         self.filename = filename
         self.original_image = Image.open(io.BytesIO(image))
         
-        self.params = params
+        self.params = Params(filename)
         self.crop_count = None
         self.bbox = None
         self.counted_image = None
 
-    def set_params(self, params: Params):   
-        self.params = params
+    def get_params(self):
+        self.params.display_params()
         self.crop_count = None
         self.bbox = None
         self.counted_image = None
@@ -38,6 +38,11 @@ class Crop():
     #     return count_from_image(_original_image, params)
 
     def count_crops(self):
+        st.write(vars(self.params))
+        self.update_data(*count_from_image(self.original_image, self.params))
+        return
+
+
         # Check types of parameters for debugging
         st.write(f"Params type: {[type(x) for x in tuple(vars(self.params).values())]}")
         # This will not raise an error now
@@ -47,7 +52,7 @@ class Crop():
         cached_result = self.cached_count_crops(self.original_image, **vars(self.params))
         self.update_data(*cached_result)
 
-    @st.cache_data(show_spinner=False)
+    # @st.cache_data(show_spinner=False)
     def cached_count_crops(_self, _original_image, filename="", erosion_iterations=6, dilation_iterations=8, split_scale_factor=1.4, minimum_width_threshold=40):
         # Recreate Params object inside the cached function
         params = Params(filename, erosion_iterations, dilation_iterations, split_scale_factor, minimum_width_threshold)

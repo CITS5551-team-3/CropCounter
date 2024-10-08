@@ -27,17 +27,20 @@ def main():
     upload()
 
     if not preconditons(display_error=False): return
-    
+
+
     for file in st.session_state['uploaded_files']:
+        st.write(st.session_state.keys())
+        # if '0I8A0493.JPG_ssf' in st.session_state.keys():
+        #     st.info("Below this")
+        #     st.write(st.session_state['0I8A0493.JPG_ssf'])
         st.subheader(file.name)
         filename = file.name
         # PARAMS = Params()
         # Display section
         crop: Crop = st.session_state[filename]
-        
-        params = crop.params
-        params.display_params()
-        crop.set_params(params)
+    
+        crop.get_params()
         crop.display_counted_image()
 
         # PARAMS.display_params()

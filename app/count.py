@@ -97,7 +97,8 @@ def count_image(image: any, PARAMS: Params, image_bits: int, headless=False) -> 
     # img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((2, 2)), iterations=6)
     # display_image("open", img, "Hull")
     # img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=3)
-    # # if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
+    # if not headless: 
+    display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
     # display_image("close", img, "Hull")
     contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # contour_image = image.copy()

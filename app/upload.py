@@ -11,15 +11,15 @@ def upload_crop(uploaded_file):
         filename = uploaded_file.name
     else: return
 
-
+    if filename in st.session_state.keys():
+        return
     # if filename in st.session_state:
     #     st.warning("Image already uploaded. You can view it below.")
     #     return
 
     # Save the uploaded image to session state
-    params = Params(filename)
     
-    st.session_state[filename] = Crop(filename, uploaded_file.getvalue(), params)
+    st.session_state[filename] = Crop(filename, uploaded_file.getvalue())
     st.success("Image uploaded successfully.")
 
 
@@ -27,11 +27,17 @@ def upload():
     st.subheader("Upload Image")
     uploaded_files = st.file_uploader("Choose image(s)...", type=["jpg", "png", "jpeg"], accept_multiple_files=True)
 
+    valid_uploaded_files_set = set()
+    valid_uploaded_files = []
+    for file in uploaded_files:
+        if file.name not in valid_uploaded_files_set:
+            valid_uploaded_files_set.add(file.name)
+            valid_uploaded_files.append(file)
+    
+    uploaded_files = valid_uploaded_files
+
     if uploaded_files:
-        # Delete all the items in Session state
-        if 'uploaded_files' in st.session_state:
-            del st.session_state['uploaded_files']
-        
+
         st.session_state['uploaded_files'] = uploaded_files
 
         for uploaded_file in uploaded_files:
@@ -45,7 +51,6 @@ def upload():
             if key not in filenames:
                 del st.session_state[key]
 
-        st.write(st.session_state.keys())
 
 
 
