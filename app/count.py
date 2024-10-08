@@ -78,11 +78,7 @@ def count_image(image: any, PARAMS: Params, image_bits: int, headless=False) -> 
     img = cv2.bitwise_or(img, img, mask=NGRDI_mask)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    if not headless: display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
-
     _, img = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY)
-
-    if not headless: display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
 
     # # image cleaning with erosion/dilation
     # # start = time.time()
@@ -97,8 +93,7 @@ def count_image(image: any, PARAMS: Params, image_bits: int, headless=False) -> 
     # img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((2, 2)), iterations=6)
     # display_image("open", img, "Hull")
     # img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=3)
-    # if not headless: 
-    display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
+    if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
     # display_image("close", img, "Hull")
     contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # contour_image = image.copy()
@@ -106,7 +101,7 @@ def count_image(image: any, PARAMS: Params, image_bits: int, headless=False) -> 
     # display_image("contour image", img, "Hull")
 
     # start = time.time()
-    contours = get_filtered_contours(img, contours, PARAMS)
+    contours = get_filtered_contours(img, contours, PARAMS, headless)
     # print("filtering...")
     # print(time.time() - start)
 
@@ -150,7 +145,7 @@ def pil_to_cv2(pil_image):
     
     return bgr_image
 
-def count_from_image(original_image, params):
+def count_from_image(original_image, params, headless=True):
     IMAGE_BITS = 8
 
     cv2_image = pil_to_cv2(original_image)
@@ -159,7 +154,7 @@ def count_from_image(original_image, params):
         cv2_image,
         params,
         IMAGE_BITS,
-        True
+        headless
     )
 
     # image = draw_centered_bbox(image, 50, 50)

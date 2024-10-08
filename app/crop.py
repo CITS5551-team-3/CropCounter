@@ -6,6 +6,7 @@ from params import Params
 from count import count_from_image
 from utils import display_image, preconditons
 import time
+import os
 
 class Crop():
     def __init__(self, filename: str, image):
@@ -26,14 +27,16 @@ class Crop():
 
     def count_crops(self):        
         # Unpack params into individual arguments
-        cached_result = self.cached_count_crops(self.original_image, **vars(self.params))
+        headless = not st.checkbox(f"Display intermediate images for {self.filename}", value=False)
+
+        cached_result = self.cached_count_crops(self.original_image, headless, **vars(self.params))
         self.update_data(*cached_result)
 
     @st.cache_data(show_spinner=False)
-    def cached_count_crops(_self, _original_image, filename="", erosion_iterations=6, dilation_iterations=8, split_scale_factor=1.4, minimum_width_threshold=40):
+    def cached_count_crops(_self, _original_image, headless, filename="", erosion_iterations=6, dilation_iterations=8, split_scale_factor=1.4, minimum_width_threshold=40):
         # Recreate Params object inside the cached function
         params = Params(filename, erosion_iterations, dilation_iterations, split_scale_factor, minimum_width_threshold)
-        return count_from_image(_original_image, params)
+        return count_from_image(_original_image, params, headless)
 
     def update_data(self, counted_image, crop_count, bbox):
         self.counted_image = counted_image
@@ -61,38 +64,44 @@ class Crop():
         
         json_data = json.dumps(self.bbox, indent=4)
         json_file = io.BytesIO(json_data.encode('utf-8'))
-        json_file.name = 'bounding_boxes.json'
+        filename, _ = os.path.splitext(self.filename)
+        json_file.name = f'{filename}_{self.crop_count}.json'
 
         return json_file
     
     def download_button(self):
         # Create columns for side-by-side buttons
-        col1, col2, _ = st.columns(3)
+        col1, col2 = st.columns(2)
         json_file = self.bbox_file()
         image_file = self.counted_image_file()
+        filename, _ = os.path.splitext(self.filename)
+        image_file.name = f'{filename}_{self.crop_count}.png'
 
-        # Download button for JSON
+        # Download button for image
         with col1:
             st.download_button(
-                label="Download Bounding Boxes",
-                data=json_file,
-                file_name=json_file.name,
-                mime='application/json'
-            )
-        
-        # Download button for image
-        with col2:
-            st.download_button(
-                label="Download Counted Image",
+                label=f"Download {image_file.name}",
                 data=image_file,
                 file_name=image_file.name,
                 mime='image/png'
             )
 
+        # Download button for JSON
+        with col2:
+            st.download_button(
+                label=f"Download {json_file.name}",
+                data=json_file,
+                file_name=json_file.name,
+                mime='application/json'
+            )
+        
+
+
     def display_counted_image(self):
         image = Image.open(io.BytesIO(self.counted_image))
         display_image(self.filename, image, self.filename)
-        st.info(self.crop_count)
+        self.download_button()
+        st.info(f"Crop count for {self.filename} is {self.crop_count}")
 
     def __repr__(self):
         return self.filename
