@@ -161,10 +161,10 @@ def count_from_image(original_image, params, headless=True):
     pil_image = cv2_to_pil(counted_image)
     
     # Convert image to bytes with file format
-    buffer = io.BytesIO()
-    pil_image.save(buffer, format="PNG")
+    # buffer = io.BytesIO()
+    # pil_image.save(buffer, format="PNG")
 
-    return buffer.getvalue(), crop_count, bbox
+    return pil_image, crop_count, bbox
 
     # crop.update_data(buffer.getvalue(), crop_count, bbox)
 
