@@ -1,6 +1,6 @@
 import io
 import math
-from typing import Optional
+from typing import Literal, Optional
 
 import cv2
 import numpy as np
@@ -128,7 +128,7 @@ def count_image(image: cv2.typing.MatLike, *, image_bits: int,
         bounding_boxes.append((x, y, w, h))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
 
-    save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
+    if not headless: save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
 
     # print(time.time() - start)
     crop_count = len(contours)
@@ -151,7 +151,7 @@ def pil_to_cv2(pil_image):
     
     return bgr_image
 
-def count(params: Params, headless=False):
+def im_count(params: Params, filename: Literal[False] | str = False) -> int:
     global PARAMS
     PARAMS = params
 
@@ -162,51 +162,45 @@ def count(params: Params, headless=False):
     GREEN_CHANNEL = 2
     BLUE_CHANNEL = 3
 
-    if headless:
-        filename = "../original images/0I8A0573.JPG"
-
+    headless: bool
+    image: cv2.typing.MatLike
+    if filename:
+        headless = True
         image = cv2.imread(filename)
         if image is None:
-            raise Exception
-        image, crop_count = count_image(
-            image,
-            image_bits=IMAGE_BITS,
-            red_channel=RED_CHANNEL,
-            green_channel=GREEN_CHANNEL,
-            blue_channel=BLUE_CHANNEL,
-            headless=True
-        )
-        # print(crop_count)
-        return crop_count
-
-    if 'uploaded_image' in st.session_state:
+            raise Exception(f'no image after reading file "{filename}"')
+    else:
+        headless = False
+        if 'uploaded_image' not in st.session_state:
+            raise Exception(f'no uploaded image specified in session state')
         pil_image = Image.open(io.BytesIO(st.session_state['uploaded_image']))
         image = pil_to_cv2(pil_image)
         
-        image, crop_count = count_image(
-            image,
-            image_bits=IMAGE_BITS,
-            red_channel=RED_CHANNEL,
-            green_channel=GREEN_CHANNEL,
-            blue_channel=BLUE_CHANNEL,
-        )
+    image, crop_count = count_image(
+        image,
+        image_bits=IMAGE_BITS,
+        red_channel=RED_CHANNEL,
+        green_channel=GREEN_CHANNEL,
+        blue_channel=BLUE_CHANNEL,
+        headless=headless
+    )
 
-
+    if not headless:
         # image = draw_centered_bbox(image, 50, 50)
-        image = cv2_to_pil(image)
+        processed_image = cv2_to_pil(image)
         
         # Convert image to bytes with file format
         buffer = io.BytesIO()
-        image.save(buffer, format="PNG")
+        processed_image.save(buffer, format="PNG")
         st.session_state['counted_image'] = buffer.getvalue()
         st.session_state['crop_count'] = crop_count
 
-    
+    return crop_count
 
 
 
 if __name__ == "__main__":
     # start = time.time()
     PARAMS = Params()
-    count(PARAMS, headless=True)
+    im_count(PARAMS, filename="../original images/0I8A0573.JPG")
     # print(time.time() - start)

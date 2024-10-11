@@ -4,11 +4,14 @@ from typing import Optional
 from matplotlib import pyplot as plt
 import numpy as np
 
-def load_counts(filename = "./images/counts.csv", *, delimiter = "\t") -> dict[str, list[Optional[int]]]:
+from params import Params
+from count import im_count
+
+def load_counts(filename = './images/counts.csv', *, delimiter = '\t') -> dict[str, list[Optional[int]]]:
     # sources in all lists are in the same order
     image_counts: dict[str, list[Optional[int]]] = {}
     
-    with open(filename) as file:
+    with open(filename, newline='') as file:
         csv_reader = csv.reader(file, delimiter=delimiter)
 
         for row in csv_reader:
@@ -33,8 +36,45 @@ def main():
 
     # plot the computed points
 
-    # TODO actually count the image
-    computed_counts: list[int] = [200 for image_name in manual_counts.keys()]
+    params = Params()
+
+    # read cached computed values
+    cache_delimiter = ','
+    cached_computed_counts: dict[str, int] = {}
+    try:
+        with open('./images/computed_counts.csv', mode='r', newline='') as file:
+            print('cache found')
+            csv_reader = csv.reader(file, delimiter=cache_delimiter)
+            for row in csv_reader:
+                image_id, count_str = row
+                cached_computed_counts[image_id] = int(count_str)
+            print(f'cache loaded ({len(cached_computed_counts)} entries)')
+    except FileNotFoundError:
+        print('cache not found, continuing...')
+    
+    print('')
+
+    computed_counts: list[int] = []
+    for i, image_name in enumerate(manual_counts.keys()):
+        print(f'{i + 1} of {len(manual_counts)} ({image_name}): counting...')
+
+        if image_name in cached_computed_counts:
+            count = cached_computed_counts[image_name]
+            computed_counts.append(count)
+            print(f'{i + 1} of {len(manual_counts)} ({image_name}): loaded count from cache ({count})')
+        else:
+            filename = f'./images/{image_name}.JPG'
+            count = im_count(params, filename)
+            computed_counts.append(count)
+            print(f'{i + 1} of {len(manual_counts)} ({image_name}): finished count ({count})')
+        
+        print('')
+    
+    # store results
+    with open('./images/computed_counts.csv', mode='w', newline='') as file:
+        csv_writer = csv.writer(file, delimiter=cache_delimiter)
+        csv_writer.writerows(zip(manual_counts.keys(), computed_counts))
+
     plt.scatter(x_range, np.array(computed_counts), marker=r'$\times$', label='Computed Counts')
 
 
@@ -70,9 +110,9 @@ def main():
     plt.minorticks_on()
     plt.tick_params(axis='x', which='minor', bottom=False)
 
-    plt.legend(loc="upper right")
+    plt.legend(loc='upper right')
     
     plt.show()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -1,6 +1,6 @@
 # app/app.py
 import streamlit as st
-from count import count
+from count import im_count
 from display import display, display_final
 from download_files import download
 from params import Params
@@ -35,7 +35,7 @@ def main():
     # Preprocess section
     # if (st.button("Count", type="primary")):
 
-    count(PARAMS)
+    im_count(PARAMS)
 
     display_final()
 
