@@ -1,33 +1,12 @@
-import base64
-
 import streamlit as st
 import io
 import json
 from PIL import Image
-from streamlit_javascript import st_javascript
-
 from params import Params
 from count import count_from_image
 from utils import display_image, preconditons
 import time
 import os
-
-
-def download_text(image, filename):
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    b64 = base64.b64encode(buffer.getbuffer()).decode()
-    js_function = f"""(function() {{
-        var link = document.createElement('a');
-        link.href = 'data:image/png;base64,{b64}';
-        link.download = '{filename}';
-        link.click();
-    }})();"""
-    st_javascript(js_function)
-
-def trigger_download():
-    st.session_state["trigger_download"] = True
-
 
 class Crop():
     def __init__(self, filename: str, image):
@@ -73,7 +52,7 @@ class Crop():
         
         # Create an image file-like object from the counted image
         filename_with_count = f"{self.filename} - {self.crop_count}.png"
-        image_file = self.counted_image
+        image_file = io.BytesIO(self.counted_image)
         image_file.name = filename_with_count
 
         return image_file
@@ -89,8 +68,7 @@ class Crop():
         json_file.name = f'{filename}_{self.crop_count}.json'
 
         return json_file
-
-    @st.fragment
+    
     def download_button(self):
         # Create columns for side-by-side buttons
         col1, col2 = st.columns(2)
@@ -99,23 +77,14 @@ class Crop():
         filename, _ = os.path.splitext(self.filename)
         image_file.name = f'{filename}_{self.crop_count}.png'
 
-        counted_image_pil = image_file
-
         # Download button for image
-        # with col1:
-        #     st.download_button(
-        #         label=f"Download {image_file.name}",
-        #         data=image_file,
-        #         file_name=image_file.name,
-        #         mime='image/png'
-        #     )
-
         with col1:
-            st.button(f"Download {image_file.name}", on_click=trigger_download, key=image_file.name)
-            if st.session_state.get("trigger_download", False):
-                st.write("Exporting, please wait...")
-                download_text(counted_image_pil, image_file.name)
-                st.session_state["trigger_download"] = False
+            st.download_button(
+                label=f"Download {image_file.name}",
+                data=image_file,
+                file_name=image_file.name,
+                mime='image/png'
+            )
 
         # Download button for JSON
         with col2:
@@ -129,7 +98,8 @@ class Crop():
 
 
     def display_counted_image(self):
-        display_image(self.filename, self.counted_image, self.filename)
+        image = Image.open(io.BytesIO(self.counted_image))
+        display_image(self.filename, image, self.filename)
         self.download_button()
         st.info(f"Crop count for {self.filename} is {self.crop_count}")
 
