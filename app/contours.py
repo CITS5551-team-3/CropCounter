@@ -7,11 +7,12 @@ from params import Params
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-PARAMS = None
-counter = {
+PARAMS: Params
+counter: dict[str, float] = {
     'mask': 0,
     'findContours': 0
 }
+
 def split_contour(img, contour, max_width):
     """
     Split a contour into smaller bounding boxes if it exceeds max_width.
@@ -106,7 +107,7 @@ def plot_graph(data, label):
     plt.tight_layout()
 
     # Display the plot in Streamlit
-    st.pyplot(plt)
+    st.pyplot(plt) # type: ignore
 
 def remove_overlapping_bboxes(contours, overlap_threshold=0.4):
     """

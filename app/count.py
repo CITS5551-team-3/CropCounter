@@ -18,7 +18,7 @@ import warnings
 # Suppress all warnings
 warnings.filterwarnings("ignore")
 
-PARAMS = None
+PARAMS: Params
 
 def save_bounding_boxes(image, bounding_boxes, output_json_file):
     # Create a list of bounding box dictionaries
@@ -35,7 +35,7 @@ def save_bounding_boxes(image, bounding_boxes, output_json_file):
     # st.session_state['bounding_boxes'] = boxes_data
 
 
-def count_image(image: any, PARAMS: Params, image_bits: int, headless=False) -> int:
+def count_image(image: cv2.typing.MatLike, PARAMS: Params, image_bits: int, headless=False) -> int:
     # Extract color channels from the image
     red_raw = image[:, :, 2]  # Red channel
     green_raw = image[:, :, 1]  # Green channel
