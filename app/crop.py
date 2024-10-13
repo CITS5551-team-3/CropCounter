@@ -113,7 +113,7 @@ class Crop():
         with col1:
             st.button(f"Download {image_file.name}", on_click=trigger_download, key=image_file.name)
             if st.session_state.get("trigger_download", False):
-                st.write("Exporting, please wait...")
+                # st.write("Exporting, please wait...")
                 download_text(counted_image_pil, image_file.name)
                 st.session_state["trigger_download"] = False
 
