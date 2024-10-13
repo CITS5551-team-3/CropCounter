@@ -152,7 +152,7 @@ def remove_overlapping_bboxes(contours, overlap_threshold=0.4):
     return [contours[i] for i in range(n) if i not in to_remove]
 
 
-def get_filtered_contours(img, contours, params: Params):
+def get_filtered_contours(img, contours, params: Params, headless=True):
     import time
     global PARAMS
     PARAMS = params
@@ -170,6 +170,8 @@ def get_filtered_contours(img, contours, params: Params):
     # print("splitting")
     # print(time.time() - start)
     
+
+
     split_contours = filter_by_size(split_contours)
     split_contours = remove_overlapping_bboxes(split_contours)
 
