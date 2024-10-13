@@ -5,7 +5,7 @@ from download_files import download
 from params import Params
 from upload import upload
 from utils import html, preconditons
-import os
+from fov import FOV
 from crop import Crop
 
 
@@ -28,6 +28,8 @@ def main():
 
     if not preconditons(display_error=False): return
 
+    fov = FOV()
+    fov.display()
 
     
     for file in st.session_state['uploaded_files']:

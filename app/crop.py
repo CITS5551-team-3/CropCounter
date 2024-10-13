@@ -131,7 +131,8 @@ class Crop():
     def display_counted_image(self):
         display_image(self.filename, self.counted_image, self.filename)
         self.download_button()
-        st.info(f"Crop count for {self.filename} is {self.crop_count}")
+        st.info(f"Crop count for {self.filename} is {self.crop_count} or {(self.crop_count / st.session_state['fov_area']):.3f} per m²")
+
 
     def __repr__(self):
         return self.filename
