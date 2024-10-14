@@ -75,7 +75,7 @@ def main():
         csv_writer = csv.writer(file, delimiter=cache_delimiter)
         csv_writer.writerows(zip(manual_counts.keys(), computed_counts))
 
-    plt.scatter(x_range, np.array(computed_counts), marker=r'$\times$', label='Computed Counts')
+    plt.scatter(x_range, np.array(computed_counts), marker=r'$\times$', s=128, label='Computed Counts')
 
 
     # plot each point
@@ -93,7 +93,7 @@ def main():
     
     for x_values, y_values in zip(source_x_values, source_y_values):
         # start x at 1 because of box plot
-        plt.scatter(np.array(x_values) + 1, np.array(y_values))
+        plt.scatter(np.array(x_values) + 1, np.array(y_values), alpha=0.7)
 
     
     # box plot
@@ -110,7 +110,7 @@ def main():
     plt.minorticks_on()
     plt.tick_params(axis='x', which='minor', bottom=False)
 
-    plt.legend(loc='upper right')
+    plt.legend(loc='lower left')
     
     plt.show()
 
