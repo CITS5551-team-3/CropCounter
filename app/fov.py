@@ -49,10 +49,10 @@ class FOV:
         st.subheader("Field of View (FOV) Calculator")
         
         # Streamlit input fields for FOV parameters
-        sensor_width = st.number_input("Sensor Width (mm)", value=36.0)
-        sensor_height = st.number_input("Sensor Height (mm)", value=24.0)
-        focal_length = st.number_input("Focal Length (mm)", value=24.0)
-        height = st.number_input("Height (m)", value=1.0)
+        sensor_width = st.number_input("Sensor Width (mm)", value=36.0, step=1.0)
+        sensor_height = st.number_input("Sensor Height (mm)", value=24.0, step=1.0)
+        focal_length = st.number_input("Focal Length (mm)", value=24.0, step=1.0)
+        height = st.number_input("Height (m)", value=1.0, step=0.1)
 
         # Initialize the FOV object with inputs
         fov = FOV(sensor_width=sensor_width, sensor_height=sensor_height, focal_length=focal_length, height=height)
