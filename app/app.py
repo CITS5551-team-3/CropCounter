@@ -1,11 +1,12 @@
 # app/app.py
 import streamlit as st
-from count import im_count
 from display import display, display_final
 from download_files import download
 from params import Params
 from upload import upload
 from utils import html, preconditons
+from fov import FOV
+from crop import Crop
 
 
 def main():
@@ -26,20 +27,31 @@ def main():
     upload()
 
     if not preconditons(display_error=False): return
-    PARAMS = Params()
-    # Display section
-    display()
 
-    PARAMS.display_params()
+    fov = FOV()
+    fov.display()
 
-    # Preprocess section
-    # if (st.button("Count", type="primary")):
+    
+    for file in st.session_state['uploaded_files']:
+        st.subheader(file.name)
+        filename = file.name
+        # PARAMS = Params()
+        # Display section
+        crop: Crop = st.session_state[filename]
+    
+        crop.get_params()
+        crop.display_counted_image()
 
-    im_count(PARAMS)
+        # PARAMS.display_params()
 
-    display_final()
+        # # Preprocess section
+        # # if (st.button("Count", type="primary")):
 
-    download()
+        # count(PARAMS)
+
+        # display_final()
+
+        # download()
 
 if __name__ == "__main__":
     main()

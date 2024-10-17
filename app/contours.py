@@ -31,18 +31,31 @@ def split_contour(img, contour, max_width):
             # Loop over the split regions
             x_offset = x + i * max_width
 
-            mask = np.zeros_like(img)
+            # mask = np.zeros_like(img)
             counter['mask'] += time.time() - start
-            cv2.rectangle(mask, (x_offset, y), (min(x_offset + max_width, x + w), y + h), 255, -1)
+            # cv2.rectangle(mask, (x_offset, y), (min(x_offset + max_width, x + w), y + h), 255, -1)
+            minx, miny = x_offset, y
+            maxx, maxy = min(x_offset + max_width, x + w), y + h
 
             # Find contours within this region
             start = time.time()
-            split_contours, _ = cv2.findContours(cv2.bitwise_and(mask, img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+            subimg = img[miny:maxy, minx:maxx]
+            # split_contours, _ = cv2.findContours(cv2.bitwise_and(mask, img), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            split_contours, _ = cv2.findContours(subimg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             counter['findContours'] += time.time() - start
-            
+
+            split_contours = list(split_contours)
+
+            for ci, ct in enumerate(split_contours):
+                for pi, p in enumerate(ct):
+                    ct[pi][0][0] += minx
+                    ct[pi][0][1] += miny
+                split_contours[ci] = ct
+
             # # Add the split contours to the list
             new_contours.extend(split_contours)
-            
+
             # new_x = x_offset
             # new_w = min(max_width, x + w - new_x)
             # new_contour = np.array([
@@ -152,7 +165,7 @@ def remove_overlapping_bboxes(contours, overlap_threshold=0.4):
     return [contours[i] for i in range(n) if i not in to_remove]
 
 
-def get_filtered_contours(img, contours, params: Params):
+def get_filtered_contours(img, contours, params: Params, headless=True):
     import time
     global PARAMS
     PARAMS = params
@@ -170,6 +183,8 @@ def get_filtered_contours(img, contours, params: Params):
     # print("splitting")
     # print(time.time() - start)
     
+
+
     split_contours = filter_by_size(split_contours)
     split_contours = remove_overlapping_bboxes(split_contours)
 

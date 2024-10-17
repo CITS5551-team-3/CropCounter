@@ -13,12 +13,11 @@ from contours import *
 import time
 
 import warnings
-# from crop import Crop
 
 # Suppress all warnings
 warnings.filterwarnings("ignore")
 
-PARAMS: Params
+PARAMS = None
 
 def save_bounding_boxes(image, bounding_boxes, output_json_file):
     # Create a list of bounding box dictionaries
@@ -31,11 +30,14 @@ def save_bounding_boxes(image, bounding_boxes, output_json_file):
             "height": int(h)
         })
 
-    return boxes_data
-    # st.session_state['bounding_boxes'] = boxes_data
+    st.session_state['bounding_boxes'] = boxes_data
 
 
-def count_image(image: cv2.typing.MatLike, PARAMS: Params, image_bits: int, headless=False):
+def count_image(image: any, *, image_bits: int,
+                red_channel = math.inf, green_channel = math.inf, blue_channel = math.inf,
+                nir_channel = math.inf, re_channel = math.inf, headless=False) -> int:
+    """expects `np.seterr(divide='ignore', invalid='ignore')`"""
+
     # Extract color channels from the image
     red_raw = image[:, :, 2]  # Red channel
     green_raw = image[:, :, 1]  # Green channel
@@ -78,7 +80,11 @@ def count_image(image: cv2.typing.MatLike, PARAMS: Params, image_bits: int, head
     img = cv2.bitwise_or(img, img, mask=NGRDI_mask)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+    if not headless: display_image("NGRDI_mask", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying NGRDI_mask")
+
     _, img = cv2.threshold(img, 10, 255, cv2.THRESH_BINARY)
+
+    if not headless: display_image("Thresholding", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Thresholding")
 
     # # image cleaning with erosion/dilation
     # # start = time.time()
@@ -93,7 +99,7 @@ def count_image(image: cv2.typing.MatLike, PARAMS: Params, image_bits: int, head
     # img = cv2.morphologyEx(img, cv2.MORPH_OPEN, np.ones((2, 2)), iterations=6)
     # display_image("open", img, "Hull")
     # img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, np.ones((3, 3)), iterations=3)
-    if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
+    # # if not headless: display_image("Dilate", cv2.cvtColor(img, cv2.COLOR_BGR2RGB), "After applying Dilation")
     # display_image("close", img, "Hull")
     contours, _ = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     # contour_image = image.copy()
@@ -101,7 +107,7 @@ def count_image(image: cv2.typing.MatLike, PARAMS: Params, image_bits: int, head
     # display_image("contour image", img, "Hull")
 
     # start = time.time()
-    contours = get_filtered_contours(img, contours, PARAMS, headless)
+    contours = get_filtered_contours(img, contours, PARAMS)
     # print("filtering...")
     # print(time.time() - start)
 
@@ -122,11 +128,11 @@ def count_image(image: cv2.typing.MatLike, PARAMS: Params, image_bits: int, head
         bounding_boxes.append((x, y, w, h))
         cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), thickness)
 
-    boxes_data = save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
+    save_bounding_boxes(image, bounding_boxes, 'bounding_boxes.json')
 
     # print(time.time() - start)
     crop_count = len(contours)
-    return image, crop_count, boxes_data
+    return image, crop_count
 
 # Convert OpenCV image to PIL Image
 def cv2_to_pil(cv2_image):
@@ -145,57 +151,61 @@ def pil_to_cv2(pil_image):
     
     return bgr_image
 
-def count_from_image(original_image, params, headless=True):
+def count(params: Params, headless=False):
+    global PARAMS
+    PARAMS = params
+
+    np.seterr(divide='ignore', invalid='ignore')
+
     IMAGE_BITS = 8
+    RED_CHANNEL = 1
+    GREEN_CHANNEL = 2
+    BLUE_CHANNEL = 3
 
-    cv2_image = pil_to_cv2(original_image)
+    if headless:
+        filename = "../original images/0I8A0573.JPG"
+        image = cv2.imread(filename)
+        if image is None:
+            raise Exception
+        image, crop_count = count_image(
+            image,
+            image_bits=IMAGE_BITS,
+            red_channel=RED_CHANNEL,
+            green_channel=GREEN_CHANNEL,
+            blue_channel=BLUE_CHANNEL,
+            headless=True
+        )
+        # print(crop_count)
+        return crop_count
 
-    counted_image, crop_count, bbox = count_image(
-        cv2_image,
-        params,
-        IMAGE_BITS,
-        headless
-    )
+    if 'uploaded_image' in st.session_state:
+        pil_image = Image.open(io.BytesIO(st.session_state['uploaded_image']))
+        image = pil_to_cv2(pil_image)
+        
+        image, crop_count = count_image(
+            image,
+            image_bits=IMAGE_BITS,
+            red_channel=RED_CHANNEL,
+            green_channel=GREEN_CHANNEL,
+            blue_channel=BLUE_CHANNEL,
+        )
 
-    # image = draw_centered_bbox(image, 50, 50)
-    pil_image = cv2_to_pil(counted_image)
+
+        # image = draw_centered_bbox(image, 50, 50)
+        image = cv2_to_pil(image)
+        
+        # Convert image to bytes with file format
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        st.session_state['counted_image'] = buffer.getvalue()
+        st.session_state['crop_count'] = crop_count
+
     
-    # Convert image to bytes with file format
-    # buffer = io.BytesIO()
-    # pil_image.save(buffer, format="PNG")
-
-    return pil_image, crop_count, bbox
-
-    # crop.update_data(buffer.getvalue(), crop_count, bbox)
-
-    # st.session_state[crop.filename] = crop
 
 
 
-
-# def count_from_crop(crop: Crop,  headless=False):
-#     np.seterr(divide='ignore', invalid='ignore')
-
-#     IMAGE_BITS = 8
-#     RED_CHANNEL = 1
-#     GREEN_CHANNEL = 2
-#     BLUE_CHANNEL = 3
-
-
-#     image = pil_to_cv2(crop.original_image)
-#     counted_image, crop_count, bbox = count_image(
-#         image,
-#         image_bits=IMAGE_BITS,
-#         red_channel=RED_CHANNEL,
-#         green_channel=GREEN_CHANNEL,
-#         blue_channel=BLUE_CHANNEL,
-#     )
-
-
-
-
-# if __name__ == "__main__":
-#     # start = time.time()
-#     PARAMS = Params()
-#     count(PARAMS, headless=True)
-#     # print(time.time() - start)
+if __name__ == "__main__":
+    # start = time.time()
+    PARAMS = Params()
+    count(PARAMS, headless=True)
+    # print(time.time() - start)
