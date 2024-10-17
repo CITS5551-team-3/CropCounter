@@ -131,6 +131,7 @@ def main():
     print(f'Avg error (abs residuals): {np.mean(np.abs(residuals))}')
     print()
 
+    plt.ylabel('Residuals')
     plt.ylim(-150, 150) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
@@ -174,6 +175,7 @@ def main():
 
     plt.xticks(loc_x_range, locations)
 
+    plt.ylabel('Relative Residuals')
     plt.ylim(-1, 1) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
@@ -244,11 +246,11 @@ def main():
         loc_x_range[loc_indices[image_locs[image_name]]] - bar_offset for image_name in image_names
     ], [
         abs(residuals[image_indices[image_name]] / true_counts[image_indices[image_name]]) for image_name in image_names
-    ], label='Computed Count')
+    ], label='Computed Counts')
 
     plt.scatter([
         loc_x_range[loc_indices[image_locs[image_name]]] + bar_offset for image_name in image_names
-    ], manual_count_rel_std_errs, label='Manual Count')
+    ], manual_count_rel_std_errs, label='Manual Counts')
 
     plt.xticks(loc_x_range, locations)
 
