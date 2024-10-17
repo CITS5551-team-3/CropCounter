@@ -77,41 +77,25 @@ def main():
 
     plt.scatter(x_range, np.array(computed_counts), marker=r'$\times$', s=128, label='Computed Counts')
 
-
-    # plot each point
-
-    n_sources = len(manual_count_values[0])
-    source_x_values: list[list[int]] = [[] for _ in range(n_sources)]
-    source_y_values: list[list[int]] = [[] for _ in range(n_sources)]
-
-    for image_index, image_counts in enumerate(manual_counts.values()):
-        for source_index, count in enumerate(image_counts):
-            if count is None: continue
-
-            source_x_values[source_index].append(image_index)
-            source_y_values[source_index].append(count)
-    
-    for x_values, y_values in zip(source_x_values, source_y_values):
-        # start x at 1 because of box plot
-        plt.scatter(np.array(x_values) + 1, np.array(y_values), alpha=0.7)
-
     
     # box plot
 
-    boxplot_values = [[value for value in values if value] + [computed_value] for values, computed_value in zip(manual_count_values, computed_counts)]
+    boxplot_values = [[value for value in values if value] for values in manual_count_values]
     plt.boxplot(boxplot_values)
     
 
     plt.xticks(x_range, x_ticks)
     plt.xticks(rotation=90)
+    plt.tight_layout()
 
-    # plt.yticks(range(0, 600, 20)) # TODO don't hard-code
+    plt.yticks(range(0, 700 + 1, 50)) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
     plt.tick_params(axis='x', which='minor', bottom=False)
 
-    plt.legend(loc='lower left')
+    plt.legend(loc='upper right')
     
+    plt.savefig("./figures/computed_est_box_plot")
     plt.show()
 
 if __name__ == '__main__':
