@@ -7,34 +7,38 @@ import numpy as np
 from params import Params
 from count import im_count
 
-def load_counts(filename = './images/counts.csv', *, delimiter = '\t') -> dict[str, list[Optional[int]]]:
+def load_counts(filename = './images/counts.csv', *, delimiter = '\t') -> tuple[dict[str, list[Optional[int]]], dict[str, str]]:
     # sources in all lists are in the same order
     image_counts: dict[str, list[Optional[int]]] = {}
+    image_locs: dict[str, str] = {}
     
     with open(filename, newline='') as file:
         csv_reader = csv.reader(file, delimiter=delimiter)
 
         for row in csv_reader:
-            image_id, *count_strs = row
+            image_loc, image_id, *count_strs = row
             counts: list[Optional[int]] = [int(count_str) if count_str else None for count_str in count_strs]
 
             image_counts[image_id] = counts
+            image_locs[image_id] = image_loc
         
-    return image_counts
+    return image_counts, image_locs
 
 def main():
-    manual_counts = load_counts()
+    show = False
+
+    manual_counts, image_locs = load_counts()
 
     # could filter by those that have 2 or more counts
 
     # start ticks at 1 because of box plot
-    x_range = np.array(list(range(len(manual_counts)))) + 1
-    x_ticks = list(manual_counts.keys())
+    image_name_x_range = np.array(list(range(len(manual_counts)))) + 1
+    image_names = list(manual_counts.keys())
 
     manual_count_values: list[list[Optional[int]]] = list(manual_counts.values())
 
 
-    # plot the computed points
+    # plot a comparison of the computed points and the manual counts
 
     params = Params()
 
@@ -75,7 +79,7 @@ def main():
         csv_writer = csv.writer(file, delimiter=cache_delimiter)
         csv_writer.writerows(zip(manual_counts.keys(), computed_counts))
 
-    plt.scatter(x_range, np.array(computed_counts), marker=r'$\times$', s=128, label='Computed Counts')
+    plt.scatter(image_name_x_range, np.array(computed_counts), marker=r'$\times$', s=128, label='Computed Counts')
 
     
     # box plot
@@ -84,19 +88,84 @@ def main():
     plt.boxplot(boxplot_values)
     
 
-    plt.xticks(x_range, x_ticks)
+    plt.xticks(image_name_x_range, image_names)
     plt.xticks(rotation=90)
     plt.tight_layout()
 
-    plt.yticks(range(0, 700 + 1, 50)) # TODO don't hard-code
+    plt.yticks(range(0, 700 + 1, 100)) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
     plt.tick_params(axis='x', which='minor', bottom=False)
 
     plt.legend(loc='upper right')
     
-    plt.savefig("./figures/computed_est_box_plot")
-    plt.show()
+    plt.tight_layout()
+    plt.savefig('./figures/computed_est_box_plot')
+    if show: plt.show()
+    else: plt.close()
+
+
+
+    # plot the residuals for each image
+
+    # estimate the true value for each image
+    true_counts = [float(np.mean([value for value in values if value])) for values in manual_count_values]
+
+    residuals = [computed_count - true_count for computed_count, true_count in zip(computed_counts, true_counts)]
+
+    plt.xticks(image_name_x_range, image_names)
+    plt.xticks(rotation=90)
+
+    locations: list[str] = sorted(list(set(image_locs.values())))
+    location_image_names: dict[str, list[str]] = {loc: [image_name for image_name in image_names if image_locs[image_name] == loc] for loc in locations}
+    image_indices: dict[str, int] = {image_name: i for i, image_name in enumerate(image_names)}
+    
+    loc_residuals: dict[str, list[float]] = {}
+    for loc in locations:
+        loc_x_indices = [image_indices[image_name] for image_name in location_image_names[loc]]
+        loc_residuals[loc] = [residuals[i] for i in loc_x_indices]
+
+        plt.scatter([image_name_x_range[i] for i in loc_x_indices], loc_residuals[loc], label=loc)
+    
+    plt.yticks([-150, -100, -50, 0, 50, 100, 150]) # TODO don't hard-code
+    plt.grid(axis='y', which='major')
+    # plt.minorticks_on()
+    # plt.tick_params(axis='x', which='minor', bottom=False)
+    
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('./figures/raw_residuals')
+    if show: plt.show()
+    else: plt.close()
+
+
+
+    # plot relative residuals for each location
+
+    loc_x_range = [i + 1 for i in range(len(locations))]
+
+    loc_rel_residuals: dict[str, list[float]] = {
+        loc: [
+            residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in loc_image_names
+        ] for loc, loc_image_names in location_image_names.items()
+    }
+    plt.boxplot([loc_rel_residuals[loc] for loc in locations])
+
+    plt.xticks(loc_x_range, locations)
+    # plt.tight_layout()
+
+    plt.ylim(-1, 1) # TODO don't hard-code
+    plt.grid(axis='y', which='major')
+    # plt.minorticks_on()
+    # plt.tick_params(axis='x', which='minor', bottom=False)
+
+    # plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('./figures/loc_rel_residuals')
+    if show: plt.show()
+    else: plt.close()
 
 if __name__ == '__main__':
     main()
