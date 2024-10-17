@@ -2,6 +2,7 @@ import csv
 from typing import Optional
 
 from matplotlib import pyplot as plt
+from scipy.stats import sem
 import numpy as np
 
 from params import Params
@@ -84,15 +85,15 @@ def main():
     
     # box plot
 
-    boxplot_values = [[value for value in values if value] for values in manual_count_values]
-    plt.boxplot(boxplot_values)
+    clean_manual_count_values = [[value for value in values if value] for values in manual_count_values]
+    plt.boxplot(clean_manual_count_values)
     
 
     plt.xticks(image_name_x_range, image_names)
     plt.xticks(rotation=90)
     plt.tight_layout()
 
-    plt.yticks(range(0, 700 + 1, 100)) # TODO don't hard-code
+    plt.ylim(0, 700) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
     plt.tick_params(axis='x', which='minor', bottom=False)
@@ -127,10 +128,13 @@ def main():
 
         plt.scatter([image_name_x_range[i] for i in loc_x_indices], loc_residuals[loc], label=loc)
     
-    plt.yticks([-150, -100, -50, 0, 50, 100, 150]) # TODO don't hard-code
+    print(f'Avg error (abs residuals): {np.mean(np.abs(residuals))}')
+    print()
+
+    plt.ylim(-150, 150) # TODO don't hard-code
     plt.grid(axis='y', which='major')
-    # plt.minorticks_on()
-    # plt.tick_params(axis='x', which='minor', bottom=False)
+    plt.minorticks_on()
+    plt.tick_params(axis='x', which='minor', bottom=False)
     
     plt.legend()
 
@@ -150,15 +154,25 @@ def main():
             residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in loc_image_names
         ] for loc, loc_image_names in location_image_names.items()
     }
-    plt.boxplot([loc_rel_residuals[loc] for loc in locations])
+    # plt.boxplot([loc_rel_residuals[loc] for loc in locations])
+    for i, loc in enumerate(locations):
+        plt.scatter([image_name_x_range[i]] * len(loc_rel_residuals[loc]), loc_rel_residuals[loc])
+
+    print('Location avg relative residual:')
+    for loc in locations:
+        print(f'{loc}: {np.mean(loc_rel_residuals[loc])}')
+    print()
+    print('Location avg relative error (abs residuals):')
+    for loc in locations:
+        print(f'{loc}: {np.mean(np.abs(loc_rel_residuals[loc]))}')
+    print()
 
     plt.xticks(loc_x_range, locations)
-    # plt.tight_layout()
 
     plt.ylim(-1, 1) # TODO don't hard-code
     plt.grid(axis='y', which='major')
-    # plt.minorticks_on()
-    # plt.tick_params(axis='x', which='minor', bottom=False)
+    plt.minorticks_on()
+    plt.tick_params(axis='x', which='minor', bottom=False)
 
     # plt.legend()
 
@@ -166,6 +180,55 @@ def main():
     plt.savefig('./figures/loc_rel_residuals')
     if show: plt.show()
     else: plt.close()
+
+
+
+    # plot std error for the manual counts of each image
+
+    plt.xticks(image_name_x_range, image_names)
+    plt.xticks(rotation=90)
+
+    manual_count_std_errs = [sem(manual_counts) for manual_counts in clean_manual_count_values]
+    plt.scatter(image_name_x_range, manual_count_std_errs)
+
+    print(f'Avg std_err: {np.mean(manual_count_std_errs)}')
+    print()
+
+    plt.ylim(0, 120) # TODO don't hard-code
+    plt.grid(axis='y', which='major')
+    plt.minorticks_on()
+    plt.tick_params(axis='x', which='minor', bottom=False)
+
+    plt.tight_layout()
+    plt.savefig('./figures/manual_std_errs')
+    if show: plt.show()
+    else: plt.close()
+
+
+
+    # plot relative std error for the manual counts of each image
+
+    plt.xticks(image_name_x_range, image_names)
+    plt.xticks(rotation=90)
+
+    manual_count_rel_std_errs = [
+        std_err / np.mean(manual_counts) for manual_counts, std_err in zip(clean_manual_count_values, manual_count_std_errs)
+    ]
+    plt.scatter(image_name_x_range, manual_count_rel_std_errs)
+
+    print(f'Avg rel std_err: {np.mean(manual_count_rel_std_errs)}')
+    print()
+
+    plt.ylim(-1, 1) # TODO don't hard-code
+    plt.grid(axis='y', which='major')
+    plt.minorticks_on()
+    plt.tick_params(axis='x', which='minor', bottom=False)
+
+    plt.tight_layout()
+    plt.savefig('./figures/manual_rel_std_errs')
+    if show: plt.show()
+    else: plt.close()
+
 
 if __name__ == '__main__':
     main()
