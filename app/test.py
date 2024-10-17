@@ -1,12 +1,21 @@
 import csv
 from typing import Optional
 
+import cv2
 from matplotlib import pyplot as plt
 from scipy.stats import sem
 import numpy as np
 
+from count import count_image
 from params import Params
-from count import im_count
+
+def im_count(params: Params, filename: str) -> int:
+    image = cv2.imread(filename)
+    if image is None:
+        raise Exception(f'no image after reading file "{filename}"')
+
+    _, count, _ = count_image(image, params, image_bits=8, headless=True)
+    return count
 
 def load_counts(filename = './images/counts.csv', *, delimiter = '\t') -> tuple[dict[str, list[Optional[int]]], dict[str, str]]:
     # sources in all lists are in the same order
