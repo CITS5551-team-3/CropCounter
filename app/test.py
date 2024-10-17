@@ -167,6 +167,11 @@ def main():
         print(f'{loc}: {np.mean(np.abs(loc_rel_residuals[loc]))}')
     print()
 
+    print(f'Avg error: {np.mean(np.abs([residuals[image_indices[image_name]] for image_name in image_names]))}')
+    print(f'Avg rel error: {np.mean(np.abs([residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in image_names]))}')
+    print(f'Avg rel error (ignoring green hills): {np.mean(np.abs([residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in image_names if image_locs[image_name] != "Green Hills"]))}')
+    print()
+
     plt.xticks(loc_x_range, locations)
 
     plt.ylim(-1, 1) # TODO don't hard-code
