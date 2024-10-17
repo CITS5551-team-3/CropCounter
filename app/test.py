@@ -172,6 +172,12 @@ def main():
     for loc in locations:
         print(f'{loc}: {np.mean(loc_rel_residuals[loc])}')
     print()
+
+    print(f'Avg residual: {np.mean(([residuals[image_indices[image_name]] for image_name in image_names]))}')
+    print(f'Avg rel residual: {np.mean(([residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in image_names]))}')
+    print(f'Avg rel residual (ignoring green hills): {np.mean(([residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in image_names if image_locs[image_name] != "Green Hills"]))}')
+    print()
+
     print('Location avg relative error (abs residuals):')
     for loc in locations:
         print(f'{loc}: {np.mean(np.abs(loc_rel_residuals[loc]))}')
@@ -235,6 +241,7 @@ def main():
     print(f'Avg rel std_err: {np.mean(manual_count_rel_std_errs)}')
     print()
 
+    plt.ylabel('Relative Error')
     plt.ylim(0, 0.5) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
