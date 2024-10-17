@@ -156,7 +156,7 @@ def main():
     }
     # plt.boxplot([loc_rel_residuals[loc] for loc in locations])
     for i, loc in enumerate(locations):
-        plt.scatter([image_name_x_range[i]] * len(loc_rel_residuals[loc]), loc_rel_residuals[loc])
+        plt.scatter([loc_x_range[i]] * len(loc_rel_residuals[loc]), loc_rel_residuals[loc])
 
     print('Location avg relative residual:')
     for loc in locations:
@@ -219,13 +219,44 @@ def main():
     print(f'Avg rel std_err: {np.mean(manual_count_rel_std_errs)}')
     print()
 
-    plt.ylim(-1, 1) # TODO don't hard-code
+    plt.ylim(0, 0.5) # TODO don't hard-code
     plt.grid(axis='y', which='major')
     plt.minorticks_on()
     plt.tick_params(axis='x', which='minor', bottom=False)
 
     plt.tight_layout()
     plt.savefig('./figures/manual_rel_std_errs')
+    if show: plt.show()
+    else: plt.close()
+
+
+
+    # plot relative residuals vs err for each location
+
+    bar_offset = 0.05
+    loc_indices: dict[str, int] = {loc: i for i, loc in enumerate(locations)}
+    plt.scatter([
+        loc_x_range[loc_indices[image_locs[image_name]]] - bar_offset for image_name in image_names
+    ], [
+        abs(residuals[image_indices[image_name]] / true_counts[image_indices[image_name]]) for image_name in image_names
+    ], label='Computed Count')
+
+    plt.scatter([
+        loc_x_range[loc_indices[image_locs[image_name]]] + bar_offset for image_name in image_names
+    ], manual_count_rel_std_errs, label='Manual Count')
+
+    plt.xticks(loc_x_range, locations)
+
+    plt.ylabel('Relative Error')
+    plt.ylim(0, 1) # TODO don't hard-code
+    plt.grid(axis='y', which='major')
+    plt.minorticks_on()
+    plt.tick_params(axis='x', which='minor', bottom=False)
+
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig('./figures/loc_rel_err_comparison')
     if show: plt.show()
     else: plt.close()
 
