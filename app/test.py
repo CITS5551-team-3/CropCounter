@@ -98,6 +98,7 @@ def main():
     plt.boxplot(clean_manual_count_values)
     
 
+    plt.xlabel('Image ID')
     plt.xticks(image_name_x_range, image_names)
     plt.xticks(rotation=90)
     plt.tight_layout()
@@ -123,6 +124,7 @@ def main():
 
     residuals = [computed_count - true_count for computed_count, true_count in zip(computed_counts, true_counts)]
 
+    plt.xlabel('Image ID')
     plt.xticks(image_name_x_range, image_names)
     plt.xticks(rotation=90)
 
@@ -188,6 +190,7 @@ def main():
     print(f'Avg rel error (ignoring green hills): {np.mean(np.abs([residuals[image_indices[image_name]] / true_counts[image_indices[image_name]] for image_name in image_names if image_locs[image_name] != "Green Hills"]))}')
     print()
 
+    plt.xlabel('Image Location')
     plt.xticks(loc_x_range, locations)
 
     plt.ylabel('Relative Residuals')
@@ -207,6 +210,7 @@ def main():
 
     # plot std error for the manual counts of each image
 
+    plt.xlabel('Image ID')
     plt.xticks(image_name_x_range, image_names)
     plt.xticks(rotation=90)
 
@@ -230,6 +234,7 @@ def main():
 
     # plot relative std error for the manual counts of each image
 
+    plt.xlabel('Image ID')
     plt.xticks(image_name_x_range, image_names)
     plt.xticks(rotation=90)
 
@@ -268,6 +273,7 @@ def main():
         loc_x_range[loc_indices[image_locs[image_name]]] + bar_offset for image_name in image_names
     ], manual_count_rel_std_errs, label='Manual Counts')
 
+    plt.xlabel('Image Location')
     plt.xticks(loc_x_range, locations)
 
     plt.ylabel('Relative Error')
